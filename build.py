@@ -27,6 +27,7 @@ SALON = {
     "maps": "https://www.google.com/maps/search/?api=1&query=Uiverstraat+39+7574+BA+Oldenzaal",
 }
 HENNA_PRIJS = "€ 24,00"
+GA4_ID = "G-06DQ66QK3J"  # Google Analytics 4 metings-ID
 
 GROEPEN = [
     {
@@ -238,6 +239,8 @@ def head(title: str, desc: str, path: str) -> str:
 <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 <script>document.documentElement.classList.add("js")</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id={GA4_ID}"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments);}}gtag('js',new Date());gtag('config','{GA4_ID}');</script>
 """
 
 
@@ -735,7 +738,7 @@ def build_privacy() -> None:
         ("Geautomatiseerde besluitvorming", [f"{n} neemt niet op basis van geautomatiseerde verwerkingen besluiten over zaken die (aanzienlijke) gevolgen kunnen hebben voor personen. {n} gebruikt de volgende computerprogramma's of -systemen: administratieve software voor schoonheidssalons."]),
         ("Hoe lang we persoonsgegevens bewaren", [f"{n} bewaart je persoonsgegevens niet langer dan strikt nodig is om de doelen te realiseren waarvoor je gegevens worden verzameld."]),
         ("Delen van persoonsgegevens met derden", [f"{n} verstrekt nooit je persoonsgegevens aan derden, alleen als dit nodig is voor de uitvoering van onze overeenkomst met jou of om te voldoen aan een wettelijke verplichting."]),
-        ("Cookies", ["Deze website gebruikt geen tracking- of advertentiecookies. Voor de lettertypen wordt gebruikgemaakt van Google Fonts."]),
+        ("Cookies", ["Deze website gebruikt Google Analytics 4 om bij te houden hoe bezoekers de website gebruiken, zodat we de website kunnen verbeteren. Google Analytics plaatst hiervoor cookies. Je kunt cookies altijd weigeren of verwijderen via de instellingen van je browser. Voor de lettertypen wordt gebruikgemaakt van Google Fonts."]),
         ("Gegevens inzien, aanpassen of verwijderen", [f"Je hebt het recht om je persoonsgegevens in te zien, te corrigeren of te verwijderen. Daarnaast heb je het recht om je eventuele toestemming voor de gegevensverwerking in te trekken of bezwaar te maken tegen de verwerking van je persoonsgegevens, en heb je het recht op gegevensoverdraagbaarheid. Je kunt een verzoek sturen naar <a href=\"mailto:{SALON['mail']}\">{SALON['mail']}</a>. We reageren zo snel mogelijk, maar binnen vier weken, op je verzoek.",
                                                        "Je hebt ook de mogelijkheid om een klacht in te dienen bij de nationale toezichthouder, de Autoriteit Persoonsgegevens."]),
         ("Hoe wij persoonsgegevens beveiligen", [f"{n} neemt de bescherming van je gegevens serieus en neemt passende maatregelen om misbruik, verlies, onbevoegde toegang, ongewenste openbaarmaking en ongeoorloofde wijziging tegen te gaan. Heb je de indruk dat je gegevens niet goed beveiligd zijn of zijn er aanwijzingen van misbruik? Neem dan contact op via <a href=\"mailto:{SALON['mail']}\">{SALON['mail']}</a>."]),

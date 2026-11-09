@@ -36,5 +36,17 @@
 
   var y = document.querySelector('[data-year]');
   if (y) y.textContent = new Date().getFullYear();
+  // GA4: klikken op bellen / mailen meten
+  document.addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('a[href^="tel:"], a[href^="mailto:"]');
+    if (!a || typeof window.gtag !== 'function') return;
+    var tel = a.getAttribute('href').indexOf('tel:') === 0;
+    window.gtag('event', tel ? 'phone_click' : 'email_click', {
+      link_url: a.getAttribute('href'),
+      link_text: (a.textContent || '').trim().slice(0, 60),
+      page_location: location.href
+    });
+  });
+
   root.classList.add('js');
 })();
