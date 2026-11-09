@@ -231,6 +231,7 @@ e = html.escape
 # ---------------------------------------------------------------- afbeeldingen
 # naam op de site -> origineel (maximale resolutie) in archief/afbeeldingen
 IMAGES = {
+    "hero-home": "skincare-special.jpg",
     "landschap": "landschap.jpg",
     "header-gezicht": "header-gezichtsbehandelingen.jpg",
     "header-kort": "header-gezichtsbehandeling.jpg",
@@ -252,6 +253,7 @@ IMAGES = {
     "card-aroma": "bloemen-geuren-ruiken_15290929.jpeg",
 }
 ALT = {
+    "hero-home": "Vrouw met een stralende, verzorgde huid na een gezichtsbehandeling bij Wendy's Schoonheidssalon",
     "landschap": "Lavendelveld bij zonsondergang: genieten van totale ontspanning en heerlijke aroma's",
     "header-gezicht": "Vrouw ontspant tijdens een gezichtsbehandeling in de schoonheidssalon",
     "header-kort": "Korte gezichtsbehandeling met reinigend masker",
@@ -294,7 +296,7 @@ def make_images() -> None:
 
 
 def _sizes_attr(naam: str, cls: str) -> str:
-    if "bg" in cls or naam in ("landschap",) or naam.startswith("header-") and "feature" not in cls:
+    if "bg" in cls or naam in ("landschap", "hero-home") or naam.startswith("header-") and "feature" not in cls:
         return "100vw"
     if naam.startswith("card-"):
         return "(max-width: 760px) 100vw, (max-width: 1200px) 45vw, 360px"
@@ -497,10 +499,6 @@ def header(active: str) -> str:
     return f"""</head>
 <body>
 <a class="skip" href="#main">Naar de inhoud</a>
-<div class="topbar"><div class="wrap">
-  <span>{SALON['straat']}, {SALON['plaats']} · Uitsluitend op afspraak</span>
-  <a href="tel:{SALON['tel_link']}">Bel voor een afspraak: <strong>{SALON['tel']}</strong></a>
-</div></div>
 <header class="header" id="top">
   <div class="wrap">
     <a class="logo" href="/" aria-label="{e(SALON['naam'])}, naar de homepage">
@@ -793,9 +791,10 @@ def build_home() -> None:
 </a>""")
 
     body = f"""
-<section class="hero">
-  <div class="wrap hero-grid">
-    <div class="reveal">
+<section class="hero hero-photo">
+  <img class="hero-img" src="/img/hero-home.jpg" alt="" fetchpriority="high">
+  <div class="wrap">
+    <div class="hero-content reveal">
       <span class="eyebrow">Schoonheidssalon in Oldenzaal</span>
       <h1><span class="script">Gezicht, lichaam en geest</span><span class="line">Tijd om <em>helemaal</em> tot rust te komen</span></h1>
       <p class="lead">Geniet van verzorgende gezichtsbehandelingen, heerlijke aroma's en een massage waarbij je alles even loslaat. Bij Wendy's Schoonheidssalon word je volledig in de watten gelegd.</p>
@@ -808,11 +807,6 @@ def build_home() -> None:
         <li>{ICONS['check']} Webecos &amp; pure aromatherapie</li>
         <li>{ICONS['check']} Behandelingen 30 tot 85 min</li>
       </ul>
-    </div>
-    <div class="hero-visual reveal">
-      <div class="arch"><img src="/img/card-gezicht.jpg" alt="Ontspannende gezichtsbehandeling met massage" width="800" height="533"></div>
-      {ROTATING}
-      <div class="badge">{ICONS['flower']}<div><strong>Aromatherapie</strong><small>Rozen, lavendel of een vleugje happiness</small></div></div>
     </div>
   </div>
 </section>
