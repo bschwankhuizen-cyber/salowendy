@@ -177,8 +177,8 @@ strong { font-weight: 500; }
 }
 .hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(32px, 6vw, 90px); align-items: center; }
 .hero h1 { margin-bottom: .35em; }
-.hero h1 .script { display: inline-block; font-size: clamp(.95rem, 1.4vw, 1.1rem); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #fff; background: var(--plum); padding: .55em .9em; margin-bottom: 1.1rem; position: relative; }
-.hero h1 .script::after { content: ""; position: absolute; left: 0; bottom: -4px; width: 46px; height: 4px; background: var(--rose); }
+.hero h1 .script { display: inline-flex; align-items: center; gap: .6em; font-size: clamp(.72rem, 1vw, .8rem); font-weight: 700; letter-spacing: .1em; line-height: 1; text-transform: uppercase; color: #fff; background: var(--plum); padding: .75em 1.25em; border-radius: 999px; margin-bottom: 1.2rem; }
+.hero h1 .script::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--rose); flex: none; }
 .hero h1 .line { display: block; }
 .hero .lead { max-width: 33em; margin-bottom: 2.2rem; }
 .hero-facts { display: flex; flex-wrap: wrap; gap: 10px 28px; margin-top: 2.6rem; padding: 0; list-style: none; color: var(--muted); font-size: .92rem; }
