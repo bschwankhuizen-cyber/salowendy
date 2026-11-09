@@ -243,6 +243,8 @@ IMAGES = {
     "header-henna": "henna-eyebrow.jpg",
     "header-nagels": "nail-art.jpg",
     "henna-voor-na": "henna-wenkbrauwen-voor-na.jpg",
+    "henna-voor": "henna-voor.jpg",
+    "henna-na": "henna-na.jpg",
     "aroma-olie": "essential-oil-aroma.jpg",
     "card-gezicht": "gezicht-beauty.jpg",
     "card-benen": "card-benen.jpg",
@@ -265,6 +267,8 @@ ALT = {
     "header-henna": "Volle, strakke wenkbrauwen met henna",
     "header-nagels": "Mooie nagels met gellak",
     "henna-voor-na": "Wenkbrauwen voor en na de henna wenkbrauwen behandeling",
+    "henna-voor": "Wenkbrauw vóór de henna wenkbrauwen behandeling",
+    "henna-na": "Wenkbrauw ná de henna wenkbrauwen behandeling: voller en strakker",
     "aroma-olie": "Aromatherapie met pure etherische olie en bloemen",
     "card-gezicht": "Ontspannende gezichtsmassage tijdens een gezichtsbehandeling in Oldenzaal",
     "card-benen": "Gladde benen na harsen",
@@ -1020,7 +1024,7 @@ def build_henna() -> None:
         ["Natuurlijke henna voor wenkbrauwen", "Voor mooie, strakke en volle wenkbrauwen",
          "Tot wel 6 weken resultaat op de haartjes", "Tot wel 2 weken resultaat op de huid"],
         f'<div class="pricetag"><b>{HENNA_PRIJS}</b><span>· ca. 20 minuten</span></div>',
-        extra='<div class="wrap"><figure class="voorna reveal" style="margin-left:0;margin-right:0"><img src="/img/henna-voor-na.jpg" alt="Wenkbrauwen voor en na de henna behandeling" width="1490" height="364" loading="lazy"></figure></div>',
+        extra='<div class="wrap"><div class="voorna-grid reveal"><figure><img src="/img/henna-voor.jpg" alt="" loading="lazy"><figcaption>Voor</figcaption></figure><figure><img src="/img/henna-na.jpg" alt="" loading="lazy"><figcaption>Na</figcaption></figure></div></div>',
         photo="card-henna.jpg", hero_photo="header-henna.jpg", faq=FAQ_HENNA,
         ld=[catalog("Henna wenkbrauwen", [offer("Henna wenkbrauwen", HENNA_PRIJS, "Natuurlijke henna voor volle, strakke wenkbrauwen; tot 6 weken resultaat op de haartjes en tot 2 weken op de huid.", "20 min", "/henna-wenkbrauwen/")])])
 

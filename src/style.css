@@ -33,6 +33,7 @@ body {
   overflow-x: clip;
 }
 img, svg { display: block; max-width: 100%; }
+img { height: auto; }
 a { color: inherit; }
 ::selection { background: var(--blush); color: var(--plum-2); }
 
@@ -590,3 +591,14 @@ section { position: relative; }
   .hero-photo .wrap { padding: 8px 0 56px; }
   .hero-photo .badge { display: none; }
 }
+
+/* Henna voor/na */
+.voorna-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: clamp(40px, 6vw, 70px); }
+.voorna-grid figure { margin: 0; position: relative; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.voorna-grid img { width: 100%; }
+.voorna-grid figcaption {
+  position: absolute; left: 14px; bottom: 14px; background: #fff; color: var(--plum-2);
+  font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: .5em 1em; border-radius: 999px;
+}
+.voorna-grid figure:last-child figcaption { background: var(--rose); color: #fff; }
+@media (max-width: 640px) { .voorna-grid { grid-template-columns: 1fr; } }
