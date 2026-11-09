@@ -39,6 +39,7 @@ GROEPEN = [
         "vanaf": "€ 32,00",
         "duur": "30 – 40 min",
         "icon": "drop",
+        "foto": "card-kort.jpg",
         "items": [
             ("Cucumber treatment", "Mooi, voor de jonge huid", "€ 32,00", "30 minuten", [
                 "In deze korte behandeling wordt je huid goed gereinigd. Je wenkbrauwen worden geëpileerd en onzuiverheden en gerstekorrels worden verwijderd.",
@@ -60,6 +61,7 @@ GROEPEN = [
         "vanaf": "€ 51,50",
         "duur": "60 min",
         "icon": "leaf",
+        "foto": "card-huidverzorging.jpg",
         "items": [
             ("Aloë Vera treatment", "Hydraterend en herstellend", "€ 51,50", "60 minuten", [
                 "Tijdens deze behandeling geniet je van een heerlijke reiniging en een fijne scrub. Je wenkbrauwen worden geëpileerd en onzuiverheden worden verwijderd.",
@@ -85,6 +87,7 @@ GROEPEN = [
         "vanaf": "€ 61,50",
         "duur": "80 min",
         "icon": "sparkle",
+        "foto": "card-huidverbetering.jpg",
         "items": [
             ("Myoxinol anti-wrinkle treatment", "Vermindert rimpels & revitaliseert", "€ 61,50", "80 minuten", [
                 "Je geniet van een goede reiniging en een fijne scrub. Nadat je wenkbrauwen zijn geëpileerd en onzuiverheden zijn verwijderd, volgt een heerlijke, ontspannende lomi lomi massage van gelaat, nek, schouders en armen. Een voedend masker wordt aangepast aan je huidtype.",
@@ -106,6 +109,7 @@ GROEPEN = [
         "vanaf": "€ 51,50",
         "duur": "60 / 85 min",
         "icon": "flower",
+        "foto": "card-aroma.jpg",
         "items": [
             ("A touch of Roses, Lavender of Happiness", "Heerlijke geurbeleving en ontspanning", "€ 51,50", "60 minuten", [
                 "In deze behandeling staan geurbeleving en ontspanning voorop. Er wordt gereinigd met een zachte olie, gevolgd door een dieptereiniging met honing. Een lange massage met onder andere zachte penselen en warme stenen zorgt voor ultieme ontspanning. Je sluit af met een verzorgend masker.",
@@ -201,9 +205,9 @@ BOTANICAL = (
     '</svg>')
 
 ROTATING = (
-    '<svg class="spin" viewBox="0 0 120 120" aria-hidden="true">'
+    '<svg class="spin" viewBox="0 0 120 120" aria-hidden="true" style="color:#e73b73">'
     '<defs><path id="c" d="M60 60m-46 0a46 46 0 1 1 92 0a46 46 0 1 1-92 0"/></defs>'
-    '<text font-family="Jost, sans-serif" font-size="8.6" letter-spacing="2.2" fill="currentColor">'
+    '<text font-family="Roboto, sans-serif" font-weight="500" font-size="8" letter-spacing="2.2" fill="currentColor">'
     '<textPath href="#c">GEZICHT · LICHAAM · GEEST · OLDENZAAL ·</textPath></text>'
     '<path d="M60 48c-3 6-3 18 0 24 3-6 3-18 0-24Z" fill="none" stroke="currentColor" stroke-width="1"/></svg>')
 
@@ -226,11 +230,12 @@ def head(title: str, desc: str, path: str) -> str:
 <meta property="og:description" content="{e(desc)}">
 <meta property="og:url" content="{SITE}{path}">
 <meta property="og:locale" content="nl_NL">
-<meta name="theme-color" content="#5a2e3c">
+<meta name="theme-color" content="#6d5a64">
+<meta property="og:image" content="{SITE}/img/landschap.jpg">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 <script>document.documentElement.classList.add("js")</script>
 """
@@ -250,8 +255,7 @@ def header(active: str) -> str:
 <header class="header" id="top">
   <div class="wrap">
     <a class="logo" href="/" aria-label="{e(SALON['naam'])}, naar de homepage">
-      {LOGO}
-      <span class="logo-text"><span class="logo-name">Wendy's</span><span class="logo-sub">Schoonheidssalon</span></span>
+      <img src="/img/logo.svg" alt="Wendy's Schoonheidssalon" width="204" height="52">
     </a>
     <button class="menu-toggle" aria-label="Menu" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
     <nav class="nav" id="nav" aria-label="Hoofdmenu">
@@ -267,7 +271,7 @@ def header(active: str) -> str:
 def cta_band() -> str:
     return f"""
 <section class="section section-plum cta-band">
-  {BOTANICAL.replace('class="botanical"', 'class="botanical-bg"')}
+  <img class="bg" src="/img/landschap.jpg" alt="" loading="lazy">
   <div class="wrap reveal">
     <span class="eyebrow">Tijd voor jezelf</span>
     <h2>Gun jezelf een moment van <em>pure aandacht</em></h2>
@@ -287,7 +291,7 @@ def footer() -> str:
   <div class="wrap">
     <div class="footer-grid">
       <div>
-        <a class="logo" href="/">{LOGO}<span class="logo-text"><span class="logo-name">Wendy's</span><span class="logo-sub">Schoonheidssalon</span></span></a>
+        <a class="logo" href="/"><img src="/img/logo-wit.svg" alt="Wendy's Schoonheidssalon" width="228" height="58" loading="lazy"></a>
         <p style="margin-top:1.4rem;max-width:22em">Verzorgende en ontspannende behandelingen voor gezicht en lichaam, in alle rust in Oldenzaal.</p>
       </div>
       <div>
@@ -337,10 +341,13 @@ def page(path: str, title: str, desc: str, body: str, active: str = "", extra_he
     target.write_text(doc, encoding="utf-8")
 
 
-def page_hero(eyebrow: str, h1: str, lead: str, crumbs: list[tuple[str, str]], after: str = "") -> str:
+def page_hero(eyebrow: str, h1: str, lead: str, crumbs: list[tuple[str, str]], after: str = "", photo: str = "") -> str:
+    bg = f'<img class="bg" src="/img/{photo}" alt="" fetchpriority="high">' if photo else ""
+    cls = "page-hero has-photo" if photo else "page-hero"
     cr = "".join(f'<a href="{h}">{t}</a><span>/</span>' for h, t in crumbs[:-1]) + f"{crumbs[-1][1]}"
     return f"""
-<section class="page-hero">
+<section class="{cls}">
+  {bg}
   <div class="wrap">
     <nav class="crumbs" aria-label="Kruimelpad">{cr}</nav>
     <span class="eyebrow">{eyebrow}</span>
@@ -409,30 +416,30 @@ def build_home() -> None:
     for g in GROEPEN:
         cards.append(f"""
 <a class="card reveal" href="/gezichtsbehandelingen/{g['slug']}/">
-  <span class="card-icon">{ICONS[g['icon']]}</span>
+  <span class="card-photo"><img src="/img/{g['foto']}" alt="" loading="lazy" width="800" height="533"></span>
   <h3>{e(g['titel'].replace(' & ontspannende', ''))}</h3>
   <p>{e(g['kaart'])}</p>
   <div class="card-meta"><span>{g['duur']}</span><span>vanaf <b>{g['vanaf']}</b></span></div>
 </a>""")
     extra_cards = [
-        ("/overige_behandelingen/", "wax", "Harsen &amp; epileren", "Benen, armen en oksels harsen; wenkbrauwen epileren en wimpers verven.", "losse onderdelen", "€ 14,00"),
-        ("/henna-wenkbrauwen/", "brow", "Henna wenkbrauwen", "Tot wel 6 weken volle, strakke wenkbrauwen met natuurlijke henna.", "20 min", HENNA_PRIJS),
-        ("/nagels/", "nail", "Gellak nagels", "Twee weken (of langer) prachtige, stevige nagels voor elk moment.", "gellak", "€ 26,50"),
+        ("/overige_behandelingen/", "card-benen.jpg", "Harsen &amp; epileren", "Benen, armen en oksels harsen; wenkbrauwen epileren en wimpers verven.", "losse onderdelen", "€ 14,00"),
+        ("/henna-wenkbrauwen/", "card-henna.jpg", "Henna wenkbrauwen", "Tot wel 6 weken volle, strakke wenkbrauwen met natuurlijke henna.", "20 min", HENNA_PRIJS),
+        ("/nagels/", "header-nagels.jpg", "Gellak nagels", "Twee weken (of langer) prachtige, stevige nagels voor elk moment.", "gellak", "€ 26,50"),
     ]
     for href, ic, t, p, l, pr in extra_cards:
         cards.append(f"""
 <a class="card reveal" href="{href}">
-  <span class="card-icon">{ICONS[ic]}</span>
+  <span class="card-photo"><img src="/img/{ic}" alt="" loading="lazy"></span>
   <h3>{t}</h3>
   <p>{p}</p>
   <div class="card-meta"><span>{l}</span><span>vanaf <b>{pr}</b></span></div>
 </a>""")
     cards.append(f"""
-<a class="card reveal" href="/kadobon/" style="background:var(--plum);color:var(--cream-2);border-color:var(--plum)">
-  <span class="card-icon" style="background:rgba(236,213,203,.18);color:var(--blush)">{ICONS['gift']}</span>
-  <h3 style="color:var(--cream)">Kadobon</h3>
-  <p style="color:rgba(244,235,226,.75)">Verras iemand die je liefhebt met een moment van ontspanning, in elk gewenst bedrag.</p>
-  <div class="card-meta" style="border-color:rgba(244,235,226,.18);color:rgba(244,235,226,.7)"><span>feestelijk verpakt</span><span class="link" style="color:var(--blush)">Bekijk</span></div>
+<a class="card reveal" href="/kadobon/" style="background:var(--plum);color:#fff;border-color:var(--plum)">
+  <span class="card-photo"><img src="/img/header-kadobon.jpg" alt="" loading="lazy"></span>
+  <h3 style="color:#fff">Kadobon</h3>
+  <p style="color:rgba(255,255,255,.8)">Verras iemand die je liefhebt met een moment van ontspanning, in elk gewenst bedrag.</p>
+  <div class="card-meta" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.75)"><span>feestelijk verpakt</span><span class="link" style="color:#ffb3cc">Bekijk</span></div>
 </a>""")
 
     schema = f"""<script type="application/ld+json">{{
@@ -446,7 +453,7 @@ def build_home() -> None:
   <div class="wrap hero-grid">
     <div class="reveal">
       <span class="eyebrow">Schoonheidssalon in Oldenzaal</span>
-      <h1><span class="script">Gezicht, lichaam &amp; geest</span>Tijd om <em>helemaal</em> tot rust te komen</h1>
+      <h1><span class="script">Gezicht, lichaam en geest</span><span class="line">Tijd om <em>helemaal</em> tot rust te komen</span></h1>
       <p class="lead">Geniet van verzorgende gezichtsbehandelingen, heerlijke aroma's en een massage waarbij je alles even loslaat. Bij Wendy's Schoonheidssalon word je volledig in de watten gelegd.</p>
       <div class="btns">
         <a class="btn btn-primary" href="tel:{SALON['tel_link']}">{ICONS['phone']} Bel voor een afspraak</a>
@@ -459,19 +466,30 @@ def build_home() -> None:
       </ul>
     </div>
     <div class="hero-visual reveal">
-      <div class="arch"><span class="arch-sun"></span>{BOTANICAL}</div>
+      <div class="arch"><img src="/img/card-gezicht.jpg" alt="Ontspannende gezichtsbehandeling met massage" width="800" height="533"></div>
       {ROTATING}
       <div class="badge">{ICONS['flower']}<div><strong>Aromatherapie</strong><small>Rozen, lavendel of een vleugje happiness</small></div></div>
     </div>
   </div>
 </section>
 
+<section class="band">
+  <img src="/img/landschap.jpg" alt="Lavendelveld bij zonsondergang" width="1600" height="450" loading="lazy">
+  <div class="wrap reveal">
+    <span class="eyebrow" style="color:#ffb3cc">Aromatherapie</span>
+    <h2>Geniet van totale ontspanning en heerlijke aroma's</h2>
+    <p>Kies uit maar liefst 9 behandelingen voor de verzorging van je huid, voor huidverbetering of voor pure ontspanning.</p>
+    <a class="btn btn-primary" href="/gezichtsbehandelingen/">Bekijk de behandelingen</a>
+  </div>
+</section>
+
 <section class="section section-tint">
   <div class="wrap welcome">
-    <blockquote class="welcome-quote reveal">Met de producten van Webecos, aangevuld met pure aromatherapie, geniet je optimaal en halen we het beste in je naar boven.<cite>Wendy</cite></blockquote>
+    <div class="reveal"><div class="welcome-photo"><img src="/img/aroma-olie.jpg" alt="Aromatherapie met pure etherische olie" width="1500" height="1000" loading="lazy"></div>
+    <blockquote class="welcome-quote">Met de producten van Webecos, aangevuld met pure aromatherapie, geniet je optimaal en halen we het beste in je naar boven.<cite>Wendy</cite></blockquote></div>
     <div class="reveal">
       <span class="eyebrow">Welkom</span>
-      <h2>Een warm welkom bij <em>Wendy's</em></h2>
+      <h2>Welkom bij <em>Wendy's</em> Schoonheidssalon</h2>
       <p>Bij Wendy's Schoonheidssalon in Oldenzaal geniet je van verzorgende en ontspannende gezichtsbehandelingen. Of kom heerlijk relaxen tijdens een uitgebreide rugbehandeling. Epileren en harsen van gelaat, armen of benen behoren natuurlijk ook tot de mogelijkheden.</p>
       <p>Kies voor huidverzorging, huidverbetering of een aromatherapiebehandeling om helemaal tot rust te komen: van een korte behandeling van 30 minuten tot een lange verwenbehandeling van 85 minuten.</p>
       <div class="welcome-sig">
@@ -543,7 +561,7 @@ def build_gezicht() -> None:
         f'<a href="#{g["slug"]}">{e(g["kort"])}</a>' for g in GROEPEN) + "</div>"
     body = page_hero("Gezichtsbehandelingen", "Stralend <em>de dag</em> door",
                      "Kies de gezichtsbehandeling die het beste bij jou past: van een korte frisse behandeling tot een uitgebreid moment voor lichaam en geest.",
-                     [("/", "Home"), ("", "Gezichtsbehandelingen")], pills)
+                     [("/", "Home"), ("", "Gezichtsbehandelingen")], pills, photo="header-gezicht.jpg")
     body += f'<section class="section" style="padding-top:20px"><div class="wrap">{CALLOUT}' + \
             "".join(group_block(g) for g in GROEPEN) + "</div></section>"
     page("/gezichtsbehandelingen/", "Gezichtsbehandelingen",
@@ -555,7 +573,7 @@ def build_gezicht() -> None:
             f'<a href="/gezichtsbehandelingen/{o["slug"]}/"{CUR if o is g else ""}>{e(o["kort"])}</a>'
             for o in GROEPEN) + "</div>"
         body = page_hero("Gezichtsbehandelingen", g["hero"], g["intro"],
-                         [("/", "Home"), ("/gezichtsbehandelingen/", "Gezichtsbehandelingen"), ("", g["titel"])], pills)
+                         [("/", "Home"), ("/gezichtsbehandelingen/", "Gezichtsbehandelingen"), ("", g["titel"])], pills, photo="header-gezicht.jpg")
         block = group_block(g, link=False).replace('<div class="group-head reveal">', '<div class="group-head reveal" hidden>', 1)
         body += f'<section class="section" style="padding-top:20px"><div class="wrap">{CALLOUT}{block}</div></section>'
         page(f"/gezichtsbehandelingen/{g['slug']}/", g["titel"],
@@ -566,7 +584,7 @@ def build_gezicht() -> None:
 def build_overig() -> None:
     body = page_hero("Harsen · verven · epileren", "De <em>finishing touch</em>",
                      "Strak gevormde wenkbrauwen, sprekende wimpers en zijdezachte benen. Los te boeken of als aanvulling op je gezichtsbehandeling.",
-                     [("/", "Home"), ("", "Harsen, verven & epileren")])
+                     [("/", "Home"), ("", "Harsen, verven & epileren")], photo="header-benen.jpg")
     chips = "".join(f"<li>{e(x)}</li>" for x in LOSSE_ONDERDELEN)
     body += f"""
 <section class="section" style="padding-top:20px">
@@ -595,7 +613,7 @@ def build_overig() -> None:
       </div>
     </div>
     <a class="card reveal" href="/henna-wenkbrauwen/" style="margin-top:22px;flex-direction:row;align-items:center;gap:24px;flex-wrap:wrap">
-      <span class="card-icon" style="margin:0">{ICONS['brow']}</span>
+      <span style="width:110px;height:74px;border-radius:8px;overflow:hidden;flex:none"><img src="/img/card-henna.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover"></span>
       <div style="flex:1;min-width:220px"><h3 style="margin:0">Henna wenkbrauwen</h3><p style="margin:0">Tot wel 6 weken volle en strakke wenkbrauwen · {HENNA_PRIJS} · 20 min.</p></div>
       <span class="link">Bekijk</span>
     </a>
@@ -606,14 +624,16 @@ def build_overig() -> None:
          body)
 
 
-def feature_page(path, title, desc, eyebrow, h1, lead, crumb, art_icon, h2, paras, checks, price_html, extra=""):
+def feature_page(path, title, desc, eyebrow, h1, lead, crumb, art_icon, h2, paras, checks, price_html, extra="", photo="", hero_photo=""):
     ch = "".join(f"<li>{ICONS['check']}<span>{c}</span></li>" for c in checks)
     ps = "".join(f"<p>{p}</p>" for p in paras)
-    body = page_hero(eyebrow, h1, lead, [("/", "Home"), ("", crumb)])
+    body = page_hero(eyebrow, h1, lead, [("/", "Home"), ("", crumb)], photo=hero_photo)
+    art = f'<div class="feature-art photo reveal"><span class="ring"></span><img src="/img/{photo}" alt="" loading="lazy"></div>' if photo else \
+        f'<div class="feature-art reveal"><span class="ring"></span>{ICONS[art_icon]}</div>'
     body += f"""
-<section class="section" style="padding-top:20px">
+<section class="section">
   <div class="wrap feature">
-    <div class="feature-art reveal"><span class="ring"></span>{ICONS[art_icon].replace('stroke-width="1.4"', 'stroke-width=".6"')}</div>
+    {art}
     <div class="reveal">
       <h2>{h2}</h2>
       {ps}
@@ -638,7 +658,9 @@ def build_henna() -> None:
          "De henna komt uit Brazilië, waar het een van de populairste salonbehandelingen is. Henna is afkomstig van een struik: plantaardig dus, en een zuiver natuurproduct."],
         ["Natuurlijke henna voor wenkbrauwen", "Voor mooie, strakke en volle wenkbrauwen",
          "Tot wel 6 weken resultaat op de haartjes", "Tot wel 2 weken resultaat op de huid"],
-        f'<div class="pricetag"><b>{HENNA_PRIJS}</b><span>· ca. 20 minuten</span></div>')
+        f'<div class="pricetag"><b>{HENNA_PRIJS}</b><span>· ca. 20 minuten</span></div>',
+        extra='<div class="wrap"><figure class="voorna reveal" style="margin-left:0;margin-right:0"><img src="/img/henna-voor-na.jpg" alt="Wenkbrauwen voor en na de henna behandeling" width="1490" height="364" loading="lazy"></figure></div>',
+        photo="card-henna.jpg", hero_photo="header-henna.jpg")
 
 
 def build_nagels() -> None:
@@ -651,7 +673,8 @@ def build_nagels() -> None:
         ["Gellak wordt ook wel gel-nagellak of shellac genoemd. Het is een tussenweg tussen gewone nagellak en gelnagels: het combineert de eigenschappen van een gel met die van nagellak.",
          "Je nagels zien er twee weken mooi uit, soms ook langer. Dat hangt af van hoe snel je nagels groeien en van je werk en hobby's."],
         ["Twee weken of langer mooie nagels", "Extra stevigheid: minder scheuren en afbreken", "Hoogglanzend resultaat"],
-        f'<div style="max-width:420px;margin-bottom:1.8rem">{pricelist(NAGELS)}</div>')
+        f'<div style="max-width:420px;margin-bottom:1.8rem">{pricelist(NAGELS)}</div>',
+        photo="header-nagels.jpg", hero_photo="header-nagels.jpg")
 
 
 def build_kadobon() -> None:
@@ -664,13 +687,13 @@ def build_kadobon() -> None:
         ["Verras vrienden of familie eens met een kadobon van Wendy's Schoonheidssalon. De bon is verkrijgbaar in elk gewenst bedrag, of voor een specifieke behandeling.",
          f"Neem telefonisch contact op via <a href=\"tel:{SALON['tel_link']}\">{SALON['tel']}</a>, dan wordt de kadobon feestelijk voor je verpakt."],
         ["In elk gewenst bedrag", "Feestelijk verpakt", "Te besteden aan alle behandelingen"],
-        "")
+        "", photo="header-kadobon.jpg", hero_photo="header-kadobon.jpg")
 
 
 def build_contact() -> None:
     body = page_hero("Contact", "The art of <em>beauty</em>",
                      "Voor het maken van een afspraak bel je gewoon even. Voor algemene informatie over de behandelingen kun je ook mailen.",
-                     [("/", "Home"), ("", "Contact")])
+                     [("/", "Home"), ("", "Contact")], photo="landschap.jpg")
     body += f"""
 <section class="section" style="padding-top:20px">
   <div class="wrap">
@@ -685,14 +708,8 @@ def build_contact() -> None:
         </ul>
       </div>
       <a class="map reveal" href="{SALON['maps']}" target="_blank" rel="noopener" style="text-decoration:none">
-        <svg class="lines" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" aria-hidden="true">
-          <path d="M-20 120C80 100 140 160 240 140S380 80 440 100" stroke-width="14"/>
-          <path d="M60 -20C80 80 60 200 100 420" stroke-width="10"/>
-          <path d="M300 -20c-20 120 20 260-10 440" stroke-width="8"/>
-          <path d="M-20 280c120-20 240 30 460-10" stroke-width="10"/>
-          <path d="M-20 200h440M180 -20v440M-20 340l440-60" stroke-width="3"/>
-        </svg>
-        <span class="pin">{ICONS['pin'].replace('fill="none"', 'fill="#fbf7f2"')}</span>
+        <img class="bg" src="/img/landschap.jpg" alt="" loading="lazy">
+        <span class="pin">{ICONS['pin'].replace('fill="none"', 'fill="#ffffff"')}</span>
         <div class="map-inner"><div><b>{SALON['straat']}</b><span>{SALON['postcode']} {SALON['plaats']}</span></div><span class="btn btn-primary">Route plannen</span></div>
       </a>
     </div>
@@ -745,10 +762,11 @@ def build_static() -> None:
     shutil.copy(ROOT / "src" / "style.css", OUT / "style.css")
     shutil.copy(ROOT / "src" / "site.js", OUT / "site.js")
     shutil.copy(ROOT / "src" / "_headers", OUT / "_headers")
+    shutil.copytree(ROOT / "src" / "img", OUT / "img")
     (OUT / "favicon.svg").write_text(
-        LOGO.replace(' class="logo-mark"', ' xmlns="http://www.w3.org/2000/svg" width="48" height="48"')
-            .replace('currentColor', '#5a2e3c').replace('fill="none"', 'fill="#fbf7f2"', 1)
-            .replace('stroke-width="1"/>', 'stroke-width="1" fill="#fbf7f2"/>', 1), encoding="utf-8")
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#6d5a64"/>'
+        '<text x="32" y="44" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="36" fill="#fff">W</text>'
+        '<circle cx="47" cy="17" r="4" fill="#e73b73"/></svg>', encoding="utf-8")
     urls = ["/", "/gezichtsbehandelingen/"] + [f"/gezichtsbehandelingen/{g['slug']}/" for g in GROEPEN] + \
            ["/overige_behandelingen/", "/henna-wenkbrauwen/", "/nagels/", "/kadobon/", "/contact/", "/privacy/"]
     (OUT / "sitemap.xml").write_text(

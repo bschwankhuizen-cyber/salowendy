@@ -1,6 +1,7 @@
 # Wendy's Schoonheidssalon — www.salonwendy.nl
 
-Statische website voor Wendy's Schoonheidssalon in Oldenzaal, geserveerd door de
+Statische website voor Wendy's Schoonheidssalon in Oldenzaal, in de eigen huisstijl
+(logo, Roboto, mauve `#6D5A64`, roze `#E73B73`, originele foto's in `src/img/`), geserveerd door de
 Cloudflare Worker **`salonwendy`** (alleen statische assets, geen servercode).
 
 ## Structuur
