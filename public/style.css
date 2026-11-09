@@ -30,7 +30,7 @@ body {
   color: var(--ink);
   font: 400 1.0625rem/1.75 var(--sans);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 img, svg { display: block; max-width: 100%; }
 a { color: inherit; }
