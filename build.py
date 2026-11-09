@@ -157,9 +157,12 @@ NAV = [
     ("/overige_behandelingen/", "Harsen & verven"),
     ("/henna-wenkbrauwen/", "Henna"),
     ("/nagels/", "Nagels"),
+    ("/prijzen/", "Prijzen"),
     ("/kadobon/", "Kadobon"),
     ("/contact/", "Contact"),
 ]
+# uitklapmenu onder "Gezicht" (wordt na GROEPEN gevuld)
+NAV_SUB = {}
 
 # ---------------------------------------------------------------- iconen
 def svg(body: str, vb: str = "0 0 24 24", extra: str = "") -> str:
@@ -401,6 +404,52 @@ def ld_script(path: str, title: str, desc: str, crumbs: list[tuple[str, str]], e
 
 
 LLM_PAGES = []  # (titel, pad, beschrijving) voor llms.txt
+PAGE_IMAGES = {}  # pad -> afbeeldingsnamen (voor de image-sitemap)
+PAGE_TITLES = {}
+
+# "Combineer met": verwante pagina's per pagina (interne links)
+KAART = {
+    "/gezichtsbehandelingen/korte-behandelingen/": ("Korte behandelingen", "card-kort", "Frisse, zuivere huid in 30 of 40 minuten · vanaf € 32,00"),
+    "/gezichtsbehandelingen/huidverzorgende-behandelingen/": ("Huidverzorgende behandelingen", "card-huidverzorging", "Met massage en masker · 60 min · € 51,50"),
+    "/gezichtsbehandelingen/huidverbeterende-en-ontspannende-behandelingen/": ("Huidverbeterende behandelingen", "card-huidverbetering", "Zichtbaar resultaat · 80 min · € 61,50"),
+    "/gezichtsbehandelingen/aromatherapie/": ("Aromatherapie", "card-aroma", "Geurbeleving met warme stenen · vanaf € 51,50"),
+    "/overige_behandelingen/": ("Harsen, epileren & verven", "card-benen", "Benen, armen, oksels, wenkbrauwen en wimpers · vanaf € 14,00"),
+    "/henna-wenkbrauwen/": ("Henna wenkbrauwen", "card-henna", "Tot 6 weken volle wenkbrauwen · € 24,00"),
+    "/nagels/": ("Gellak nagels", "header-nagels", "Twee weken of langer mooie nagels · € 26,50"),
+    "/kadobon/": ("Kadobon", "header-kadobon", "In elk gewenst bedrag, feestelijk verpakt"),
+    "/prijzen/": ("Prijslijst", "aroma-olie", "Alle behandelingen en prijzen op één pagina"),
+    "/gezichtsbehandelingen/": ("Gezichtsbehandelingen", "card-gezicht", "9 behandelingen + huidtype-wijzer"),
+}
+RELATED = {
+    "/gezichtsbehandelingen/": ["/overige_behandelingen/", "/henna-wenkbrauwen/", "/prijzen/"],
+    "/gezichtsbehandelingen/korte-behandelingen/": ["/gezichtsbehandelingen/huidverzorgende-behandelingen/", "/overige_behandelingen/", "/henna-wenkbrauwen/"],
+    "/gezichtsbehandelingen/huidverzorgende-behandelingen/": ["/gezichtsbehandelingen/huidverbeterende-en-ontspannende-behandelingen/", "/gezichtsbehandelingen/aromatherapie/", "/overige_behandelingen/"],
+    "/gezichtsbehandelingen/huidverbeterende-en-ontspannende-behandelingen/": ["/gezichtsbehandelingen/huidverzorgende-behandelingen/", "/gezichtsbehandelingen/aromatherapie/", "/henna-wenkbrauwen/"],
+    "/gezichtsbehandelingen/aromatherapie/": ["/gezichtsbehandelingen/huidverbeterende-en-ontspannende-behandelingen/", "/kadobon/", "/nagels/"],
+    "/overige_behandelingen/": ["/henna-wenkbrauwen/", "/gezichtsbehandelingen/korte-behandelingen/", "/nagels/"],
+    "/henna-wenkbrauwen/": ["/overige_behandelingen/", "/gezichtsbehandelingen/", "/nagels/"],
+    "/nagels/": ["/henna-wenkbrauwen/", "/gezichtsbehandelingen/korte-behandelingen/", "/kadobon/"],
+    "/kadobon/": ["/gezichtsbehandelingen/aromatherapie/", "/prijzen/", "/nagels/"],
+    "/prijzen/": ["/gezichtsbehandelingen/", "/kadobon/", "/henna-wenkbrauwen/"],
+    "/contact/": ["/prijzen/", "/gezichtsbehandelingen/", "/kadobon/"],
+}
+
+
+def related_html(path: str) -> str:
+    rel = RELATED.get(path)
+    if not rel:
+        return ""
+    titel = "Ook interessant" if path in ("/prijzen/", "/contact/", "/kadobon/") else "Combineer met"
+    cards = "".join(
+        f'<a class="card reveal" href="{u}"><span class="card-photo"><img src="/img/{KAART[u][1]}.jpg" alt="" loading="lazy"></span>'
+        f'<h3>{e(KAART[u][0])}</h3><p>{e(KAART[u][2])}</p><span class="link">Bekijk</span></a>' for u in rel)
+    return f"""
+<section class="section related">
+  <div class="wrap">
+    <div class="section-head reveal"><span class="eyebrow">{titel}</span><h2>Maak het <em>compleet</em></h2></div>
+    <div class="cards related-cards">{cards}</div>
+  </div>
+</section>"""
 CUR = ' aria-current="page"'
 
 # ---------------------------------------------------------------- layout
@@ -436,9 +485,15 @@ def head(title: str, desc: str, path: str, og: str = "landschap") -> str:
 
 
 def header(active: str) -> str:
-    items = "".join(
-        f'<li><a class="navlink" href="{href}"{CUR if active == href else ""}>{label}</a></li>'
-        for href, label in NAV)
+    def li(href, label):
+        cur = CUR if active == href else ""
+        sub = NAV_SUB.get(href)
+        if not sub:
+            return f'<li><a class="navlink" href="{href}"{cur}>{label}</a></li>'
+        subs = "".join(f'<li><a href="{h}"{CUR if active == h else ""}>{e(t)}</a></li>' for h, t in sub)
+        return (f'<li class="has-sub"><a class="navlink" href="{href}"{cur}>{label}</a>'
+                f'<ul class="subnav" aria-label="{label}">{subs}</ul></li>')
+    items = "".join(li(h, l) for h, l in NAV)
     return f"""</head>
 <body>
 <a class="skip" href="#main">Naar de inhoud</a>
@@ -474,6 +529,7 @@ def cta_band() -> str:
       <a class="btn btn-light" href="tel:{SALON['tel_link']}">{ICONS['phone']} {SALON['tel']}</a>
       <a class="btn btn-light" href="mailto:{SALON['mail']}">{ICONS['mail']} {SALON['mail']}</a>
     </div>
+    <p style="margin:1.6rem 0 0"><a href="/contact/" style="color:#fff">Route &amp; contactgegevens</a> · <a href="/prijzen/" style="color:#fff">Bekijk alle prijzen</a></p>
   </div>
 </section>"""
 
@@ -492,6 +548,9 @@ def footer() -> str:
         <h4>Behandelingen</h4>
         <ul>
           <li><a href="/gezichtsbehandelingen/">Gezichtsbehandelingen</a></li>
+          <li><a href="/gezichtsbehandelingen/korte-behandelingen/">Korte behandelingen</a></li>
+          <li><a href="/gezichtsbehandelingen/huidverzorgende-behandelingen/">Huidverzorgende behandelingen</a></li>
+          <li><a href="/gezichtsbehandelingen/huidverbeterende-en-ontspannende-behandelingen/">Huidverbeterende behandelingen</a></li>
           <li><a href="/gezichtsbehandelingen/aromatherapie/">Aromatherapie</a></li>
           <li><a href="/overige_behandelingen/">Harsen, verven &amp; epileren</a></li>
           <li><a href="/henna-wenkbrauwen/">Henna wenkbrauwen</a></li>
@@ -501,9 +560,11 @@ def footer() -> str:
       <div>
         <h4>Salon</h4>
         <ul>
+          <li><a href="/prijzen/">Prijslijst</a></li>
           <li><a href="/kadobon/">Kadobon</a></li>
           <li><a href="/contact/">Contact &amp; afspraak</a></li>
           <li><a href="/privacy/">Privacyverklaring</a></li>
+          <li><a href="/sitemap/">Sitemap</a></li>
         </ul>
       </div>
       <div>
@@ -532,11 +593,17 @@ def page(path: str, title: str, desc: str, body: str, active: str = "", extra_he
          crumbs=None, ld=None, faq=None, og: str = "landschap", llm: bool = True) -> None:
     crumbs = crumbs if crumbs is not None else [("Home", "/")]
     full = title if title.startswith("Wendy") else f"{title} | {SALON['naam']}"
+    hdr = header(active or path)
+    if active and active != path:  # subpagina: markeer ook het item in het uitklapmenu
+        hdr = hdr.replace(f'<a href="{path}">', f'<a href="{path}"{CUR}>')
     doc = (head(title, desc, path, og) + extra_head + ld_script(path, full, desc, crumbs, ld or [], faq)
-           + header(active or path) + body + faq_html(faq or []) + cta_band() + footer())
+           + hdr + body + related_html(path) + faq_html(faq or []) + cta_band() + footer())
     target = OUT / path.strip("/") / "index.html" if path != "/" else OUT / "index.html"
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(responsive(doc), encoding="utf-8")
+    doc = responsive(doc)
+    target.write_text(doc, encoding="utf-8")
+    PAGE_IMAGES[path] = list(dict.fromkeys(re.findall(r'src="/img/([a-z0-9-]+?)-\d+\.webp"', doc)))
+    PAGE_TITLES[path] = title
     if llm:
         LLM_PAGES.append((title, path, desc))
 
@@ -613,6 +680,9 @@ def pricelist(rows) -> str:
 
 # ---------------------------------------------------------------- veelgestelde vragen (gebaseerd op bestaande info)
 TEL_A = f'<a href="tel:{SALON["tel_link"]}">{SALON["tel"]}</a>'
+NAV_SUB["/gezichtsbehandelingen/"] = [("/gezichtsbehandelingen/", "Alle gezichtsbehandelingen")] + [
+    (f"/gezichtsbehandelingen/{g['slug']}/", g["titel"].replace(" & ontspannende", "")) for g in GROEPEN]
+
 FAQ_ALGEMEEN = [
     ("Hoe maak ik een afspraak bij Wendy's Schoonheidssalon?",
      f"Afspraken maak je telefonisch via {TEL_A}. Er wordt uitsluitend op afspraak gewerkt, zodat de tijd speciaal voor jou gereserveerd is. Voor algemene vragen kun je ook mailen naar <a href=\"mailto:info@salonwendy.nl\">info@salonwendy.nl</a>."),
@@ -1052,6 +1122,63 @@ def build_privacy() -> None:
          crumbs=[("Home", "/"), ("Privacyverklaring", "/privacy/")], og="header-aroma", llm=False)
 
 
+def build_prijzen() -> None:
+    def blok(titel, link, rows, tag=""):
+        return f"""
+<div class="pricebox reveal">
+  <span class="treatment-tag">{tag}</span>
+  <h3><a href="{link}" style="text-decoration:none">{e(titel)}</a></h3>
+  {pricelist(rows)}
+  <a class="link" href="{link}">Meer over {e(titel.lower())}</a>
+</div>"""
+    blokken = [blok(g["titel"].replace(" & ontspannende", ""), f"/gezichtsbehandelingen/{g['slug']}/",
+                    [(f"{n} · {du}", pr) for n, _, pr, du, _ in g["items"]], "Gezicht") for g in GROEPEN]
+    blokken += [
+        blok("Losse onderdelen gezicht", "/overige_behandelingen/", PRIJS_ONDERDELEN + [(f"Bij gezichtsbehandeling: {a.lower()}", b) for a, b in COMBI], "Epileren · harsen · verven"),
+        blok("Harsen lichaam", "/overige_behandelingen/", HARSEN, "Lichaam"),
+        blok("Henna wenkbrauwen", "/henna-wenkbrauwen/", [("Henna wenkbrauwen · ca. 20 min", HENNA_PRIJS)], "Wenkbrauwen"),
+        blok("Gellak nagels", "/nagels/", NAGELS, "Nagels"),
+    ]
+    body = page_hero("Prijzen", "Prijslijst <em>behandelingen</em>",
+                     "Alle behandelingen en prijzen van Wendy's Schoonheidssalon in Oldenzaal op één overzicht. Een kadobon is verkrijgbaar in elk gewenst bedrag.",
+                     [("/", "Home"), ("", "Prijzen")], photo="header-aroma.jpg")
+    body += f'<section class="section"><div class="wrap"><div class="pricegrid">{"".join(blokken)}</div>' \
+            f'<p class="center" style="text-align:center;margin-top:36px;color:var(--muted)">Uitsluitend op afspraak. Afspraak maken: <a class="link" href="tel:{SALON["tel_link"]}">{SALON["tel"]}</a></p></div></section>'
+    alle = [o for g in GROEPEN for o in group_offers(g)] + [offer(f"Losse onderdelen: {a.lower()}", b, url="/overige_behandelingen/") for a, b in PRIJS_ONDERDELEN] \
+        + [offer(f"Harsen {a.lower()}", b, url="/overige_behandelingen/") for a, b in HARSEN] \
+        + [offer("Henna wenkbrauwen", HENNA_PRIJS, duur="20 min", url="/henna-wenkbrauwen/")] + [offer(a, b, url="/nagels/") for a, b in NAGELS]
+    page("/prijzen/", "Prijzen schoonheidssalon Oldenzaal",
+         "Prijslijst van Wendy's Schoonheidssalon in Oldenzaal: gezichtsbehandelingen vanaf € 32,00, harsen vanaf € 19,50, henna € 24,00, gellak € 26,50.",
+         body, crumbs=[("Home", "/"), ("Prijzen", "/prijzen/")], og="header-aroma",
+         faq=[FAQ_ALGEMEEN[3], FAQ_HARSEN[1], FAQ_GEZICHT[2]], ld=[catalog("Prijslijst Wendy's Schoonheidssalon", alle)])
+
+
+def build_sitemap_page() -> None:
+    def a(u):
+        return f'<a href="{u}">{e(PAGE_TITLES.get(u, u))}</a>'
+    gz = "".join(f"<li>{a('/gezichtsbehandelingen/' + g['slug'] + '/')}<ul>" +
+                 "".join(f"<li>{e(n)} · {pr}</li>" for n, _, pr, _, _ in g["items"]) + "</ul></li>" for g in GROEPEN)
+    body = page_hero("Sitemap", "Alle <em>pagina's</em>", "Een overzicht van alle pagina's en behandelingen op deze website.",
+                     [("/", "Home"), ("", "Sitemap")])
+    body += f"""
+<section class="section" style="padding-top:20px"><div class="wrap prose sitemap-list">
+<ul>
+  <li>{a('/')}</li>
+  <li>{a('/gezichtsbehandelingen/')}<ul>{gz}</ul></li>
+  <li>{a('/overige_behandelingen/')}</li>
+  <li>{a('/henna-wenkbrauwen/')}</li>
+  <li>{a('/nagels/')}</li>
+  <li>{a('/prijzen/')}</li>
+  <li>{a('/kadobon/')}</li>
+  <li>{a('/contact/')}</li>
+  <li>{a('/privacy/')}</li>
+</ul>
+<p>Voor zoekmachines: <a href="/sitemap.xml">sitemap.xml</a> · Voor AI-assistenten: <a href="/llms.txt">llms.txt</a></p>
+</div></section>"""
+    page("/sitemap/", "Sitemap", "Overzicht van alle pagina's en behandelingen van Wendy's Schoonheidssalon in Oldenzaal.", body,
+         crumbs=[("Home", "/"), ("Sitemap", "/sitemap/")], llm=False)
+
+
 def build_404() -> None:
     body = page_hero("Oeps", "Deze pagina is even <em>op adem</em> aan het komen",
                      "De pagina die je zoekt bestaat niet (meer). Bekijk de behandelingen of ga terug naar de homepage.",
@@ -1080,10 +1207,16 @@ def build_static() -> None:
 
 
 def build_seo_files() -> None:
-    urls = ["/"] + [p for _, p, _ in LLM_PAGES if p != "/"] + ["/privacy/"]
+    volgorde = ["/", "/gezichtsbehandelingen/"] + [f"/gezichtsbehandelingen/{g['slug']}/" for g in GROEPEN] + \
+        ["/overige_behandelingen/", "/henna-wenkbrauwen/", "/nagels/", "/prijzen/", "/kadobon/", "/contact/", "/privacy/", "/sitemap/"]
+    regels = []
+    for u in volgorde:
+        imgs = "".join(f"\n    <image:image><image:loc>{SITE}/img/{n}.jpg</image:loc></image:image>"
+                       for n in PAGE_IMAGES.get(u, []))
+        regels.append(f"  <url>\n    <loc>{SITE}{u}</loc>\n    <lastmod>{VANDAAG}</lastmod>{imgs}\n  </url>\n")
     (OUT / "sitemap.xml").write_text(
-        '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-        "".join(f"  <url><loc>{SITE}{u}</loc><lastmod>{VANDAAG}</lastmod></url>\n" for u in urls) + "</urlset>\n", encoding="utf-8")
+        '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+        'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n' + "".join(regels) + "</urlset>\n", encoding="utf-8")
     bots = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-SearchBot", "Claude-User", "PerplexityBot",
             "Perplexity-User", "Google-Extended", "Applebot-Extended", "Bingbot", "Googlebot", "CCBot", "meta-externalagent"]
     (OUT / "robots.txt").write_text(
@@ -1165,6 +1298,8 @@ def main() -> None:
     build_kadobon()
     build_contact()
     build_privacy()
+    build_prijzen()
+    build_sitemap_page()
     build_404()
     build_seo_files()
     print("Klaar:", sum(1 for _ in OUT.rglob("*.html")), "pagina's in", OUT)

@@ -534,3 +534,33 @@ section { position: relative; }
 .faq-a { padding: 0 24px 22px; color: var(--muted); }
 .faq-a p { margin: 0; }
 .faq-a a, .prose a { color: var(--rose); }
+
+/* Uitklapmenu */
+.nav .has-sub { position: relative; }
+.subnav {
+  list-style: none; margin: 0; padding: 10px; position: absolute; left: -18px; top: calc(100% + 14px); min-width: 290px;
+  background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);
+  display: block !important; opacity: 0; visibility: hidden; transform: translateY(6px); transition: opacity .25s, transform .25s, visibility 0s .25s;
+}
+.subnav::before { content: ""; position: absolute; left: 0; right: 0; top: -16px; height: 16px; }
+.has-sub:hover .subnav, .has-sub:focus-within .subnav { opacity: 1; visibility: visible; transform: none; transition: opacity .25s, transform .25s; }
+.subnav li { border: 0 !important; }
+.subnav a { display: block; padding: 10px 14px; border-radius: 6px; text-decoration: none; color: var(--plum-2); font-size: .95rem; }
+.subnav a:hover, .subnav a[aria-current="page"] { background: var(--cream-2); color: var(--rose); }
+@media (max-width: 980px) {
+  .subnav { position: static; opacity: 1; visibility: visible; transform: none; box-shadow: none; border: 0; min-width: 0; padding: 0 0 12px 14px; }
+  .subnav a { font-size: 1rem; padding: 8px 0; color: var(--muted); }
+}
+
+/* Combineer met */
+.related { padding-top: 0; }
+.related-cards { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+.related .card .link { margin-top: 10px; }
+
+/* HTML-sitemap */
+.sitemap-list ul { list-style: none; padding-left: 0; }
+.sitemap-list ul ul { padding-left: 22px; border-left: 2px solid var(--blush); margin: 8px 0 12px 6px; }
+.sitemap-list > ul > li { padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 1.1rem; }
+.sitemap-list ul ul li { font-size: .98rem; color: var(--muted); padding: 4px 0; }
+.sitemap-list a { color: var(--plum-2); font-weight: 500; text-decoration: none; }
+.sitemap-list a:hover { color: var(--rose); }
