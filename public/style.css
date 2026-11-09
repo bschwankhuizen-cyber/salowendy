@@ -504,3 +504,33 @@ section { position: relative; }
 .band p { margin: 0 0 1.6rem; font-size: 1.15rem; max-width: 30em; color: rgba(255,255,255,.92); }
 .hero .arch { background: var(--blush); }
 .hero .arch img { object-position: 62% 50%; }
+
+/* Huidtype-wijzer */
+.skins { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+.skin {
+  display: flex; flex-direction: column; gap: 6px; text-decoration: none;
+  background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--rose); border-radius: var(--radius);
+  padding: 20px 22px; transition: transform .3s, box-shadow .3s;
+}
+.skin:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+.skin-type { font-size: .78rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--rose); }
+.skin strong { font-size: 1.1rem; font-weight: 500; color: var(--plum-2); line-height: 1.35; }
+.skin-meta { font-size: .9rem; color: var(--muted); }
+
+/* Veelgestelde vragen */
+.faq-list { display: grid; gap: 12px; }
+.faq-item { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.faq-item summary {
+  list-style: none; cursor: pointer; padding: 20px 56px 20px 24px; position: relative;
+  font-weight: 500; font-size: 1.05rem; color: var(--plum-2); line-height: 1.4;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after {
+  content: "+"; position: absolute; right: 22px; top: 50%; transform: translateY(-50%);
+  width: 26px; height: 26px; border-radius: 50%; background: var(--blush); color: var(--rose);
+  display: grid; place-items: center; font-size: 1.2rem; font-weight: 400; transition: transform .3s, background .3s, color .3s;
+}
+.faq-item[open] summary::after { transform: translateY(-50%) rotate(45deg); background: var(--rose); color: #fff; }
+.faq-a { padding: 0 24px 22px; color: var(--muted); }
+.faq-a p { margin: 0; }
+.faq-a a, .prose a { color: var(--rose); }

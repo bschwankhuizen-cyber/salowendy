@@ -7,12 +7,19 @@ draai het script opnieuw. Er zijn geen externe pakketten nodig.
 """
 from __future__ import annotations
 
+import datetime
 import html
+import json
+import re
 import shutil
 from pathlib import Path
 
+from PIL import Image  # pip install pillow
+
 ROOT = Path(__file__).parent
 OUT = ROOT / "public"
+ARCHIEF = ROOT / "archief" / "afbeeldingen"
+VANDAAG = datetime.date.today().isoformat()
 SITE = "https://www.salonwendy.nl"
 
 # ---------------------------------------------------------------- gegevens
@@ -32,6 +39,7 @@ GA4_ID = "G-06DQ66QK3J"  # Google Analytics 4 metings-ID
 GROEPEN = [
     {
         "slug": "korte-behandelingen",
+        "header": "header-kort.jpg",
         "titel": "Korte behandelingen",
         "kort": "Korte behandeling",
         "hero": "Je huid ziet er na de behandeling <em>stralend</em> uit",
@@ -54,6 +62,7 @@ GROEPEN = [
     },
     {
         "slug": "huidverzorgende-behandelingen",
+        "header": "header-huidverzorging.jpg",
         "titel": "Huidverzorgende behandelingen",
         "kort": "Huidverzorgend",
         "hero": "Na een huidverzorgende behandeling zie je er weer <em>stralend</em> uit",
@@ -80,6 +89,7 @@ GROEPEN = [
     },
     {
         "slug": "huidverbeterende-en-ontspannende-behandelingen",
+        "header": "header-huidverbetering.jpg",
         "titel": "Huidverbeterende & ontspannende behandelingen",
         "kort": "Huidverbeterend",
         "hero": "Geniet en ontspan van deze <em>heerlijke</em> behandelingen",
@@ -102,6 +112,7 @@ GROEPEN = [
     },
     {
         "slug": "aromatherapie",
+        "header": "header-aroma.jpg",
         "titel": "Aromatherapie",
         "kort": "Aromatherapie",
         "hero": "Geniet van een <em>unieke</em> geurbeleving",
@@ -213,11 +224,188 @@ ROTATING = (
     '<path d="M60 48c-3 6-3 18 0 24 3-6 3-18 0-24Z" fill="none" stroke="currentColor" stroke-width="1"/></svg>')
 
 e = html.escape
+
+# ---------------------------------------------------------------- afbeeldingen
+# naam op de site -> origineel (maximale resolutie) in archief/afbeeldingen
+IMAGES = {
+    "landschap": "landschap.jpg",
+    "header-gezicht": "header-gezichtsbehandelingen.jpg",
+    "header-kort": "header-gezichtsbehandeling.jpg",
+    "header-huidverzorging": "zuiver-gezichtsbehandeling.jpg",
+    "header-huidverbetering": "header-strand.jpg",
+    "header-aroma": "lavendel-field.jpg",
+    "header-benen": "header-benen-uit-auto.jpg",
+    "header-kadobon": "kadobon-salon-wendy.jpg",
+    "header-henna": "henna-eyebrow.jpg",
+    "header-nagels": "nail-art.jpg",
+    "henna-voor-na": "henna-wenkbrauwen-voor-na.jpg",
+    "aroma-olie": "essential-oil-aroma.jpg",
+    "card-gezicht": "gezicht-beauty.jpg",
+    "card-benen": "card-benen.jpg",
+    "card-henna": "henna-wenkbrauw.jpg",
+    "card-kort": "gezichtsbehandeling_192984281-AS.jpeg",
+    "card-huidverzorging": "huidverzorging_288276290-AS.jpeg",
+    "card-huidverbetering": "huid_187904763.jpeg",
+    "card-aroma": "bloemen-geuren-ruiken_15290929.jpeg",
+}
+ALT = {
+    "landschap": "Lavendelveld bij zonsondergang: genieten van totale ontspanning en heerlijke aroma's",
+    "header-gezicht": "Vrouw ontspant tijdens een gezichtsbehandeling in de schoonheidssalon",
+    "header-kort": "Korte gezichtsbehandeling met reinigend masker",
+    "header-huidverzorging": "Verzorgende gezichtsbehandeling voor een stralende huid",
+    "header-huidverbetering": "Ontspannen en stralend na een huidverbeterende behandeling",
+    "header-aroma": "Lavendelveld: aromatherapie met lavendel, rozen en citrus",
+    "header-benen": "Gladde benen na harsen bij Wendy's Schoonheidssalon",
+    "header-kadobon": "Feestelijk verpakte kadobon van Wendy's Schoonheidssalon",
+    "header-henna": "Volle, strakke wenkbrauwen met henna",
+    "header-nagels": "Mooie nagels met gellak",
+    "henna-voor-na": "Wenkbrauwen voor en na de henna wenkbrauwen behandeling",
+    "aroma-olie": "Aromatherapie met pure etherische olie en bloemen",
+    "card-gezicht": "Ontspannende gezichtsmassage tijdens een gezichtsbehandeling in Oldenzaal",
+    "card-benen": "Gladde benen na harsen",
+    "card-henna": "Close-up van een mooi gevormde wenkbrauw",
+    "card-kort": "Korte gezichtsbehandeling met masker",
+    "card-huidverzorging": "Huidverzorgende gezichtsbehandeling met reiniging",
+    "card-huidverbetering": "Huidverbeterende gezichtsbehandeling door de schoonheidsspecialiste",
+    "card-aroma": "Vrouw geniet van de geur van bloemen tijdens aromatherapie",
+}
+BREEDTES = (480, 800, 1200, 1600, 1920, 2400)
+SIZES = {}  # naam -> (breedte, hoogte, [breedtes])
+
+
+def make_images() -> None:
+    """Maakt WebP-varianten (tot en met de originele resolutie) + een JPG op volle grootte."""
+    doel = OUT / "img"
+    doel.mkdir(parents=True, exist_ok=True)
+    for naam, bron in IMAGES.items():
+        im = Image.open(ARCHIEF / bron).convert("RGB")
+        w, h = im.size
+        ws = sorted({b for b in BREEDTES if b < w} | {w})
+        for b in ws:
+            v = im if b == w else im.resize((b, round(h * b / w)), Image.LANCZOS)
+            v.save(doel / f"{naam}-{b}.webp", "WEBP", quality=82, method=6)
+        im.save(doel / f"{naam}.jpg", "JPEG", quality=88, progressive=True, optimize=True)
+        SIZES[naam] = (w, h, ws)
+    for svg in ("logo.svg", "logo-wit.svg"):
+        shutil.copy(ROOT / "src" / "img" / svg, doel / svg)
+
+
+def _sizes_attr(naam: str, cls: str) -> str:
+    if "bg" in cls or naam in ("landschap",) or naam.startswith("header-") and "feature" not in cls:
+        return "100vw"
+    if naam.startswith("card-"):
+        return "(max-width: 760px) 100vw, (max-width: 1200px) 45vw, 360px"
+    return "(max-width: 860px) 100vw, 50vw"
+
+
+def responsive(doc: str) -> str:
+    """Zet elke <img src="/img/naam.jpg"> om naar een responsive WebP-afbeelding met srcset."""
+    def sub(m):
+        tag = m.group(0)
+        naam = m.group(1)
+        if naam not in SIZES:
+            return tag
+        w, h, ws = SIZES[naam]
+        cls = (re.search(r'class="([^"]*)"', tag) or [None, ""])[1]
+        srcset = ", ".join(f"/img/{naam}-{b}.webp {b}w" for b in ws)
+        tag = tag.replace(f'src="/img/{naam}.jpg"', f'src="/img/{naam}-{ws[-1]}.webp" srcset="{srcset}" sizes="{_sizes_attr(naam, cls)}"')
+        tag = re.sub(r'\s(width|height)="\d+"', "", tag)
+        tag = tag.replace("<img ", f'<img width="{w}" height="{h}" ', 1)
+        if 'alt=""' in tag and "bg" not in cls:
+            tag = tag.replace('alt=""', f'alt="{e(ALT.get(naam, ""))}"')
+        if "decoding=" not in tag:
+            tag = tag.replace("<img ", '<img decoding="async" ', 1)
+        return tag
+    return re.sub(r'<img[^>]*src="/img/([a-z0-9-]+)\.jpg"[^>]*>', sub, doc)
+
+
+# ---------------------------------------------------------------- structured data / SEO
+SALON_LD = {
+    "@type": ["BeautySalon", "HealthAndBeautyBusiness"],
+    "@id": "https://www.salonwendy.nl/#salon",
+    "name": "Wendy's Schoonheidssalon",
+    "alternateName": "Salon Wendy",
+    "description": "Schoonheidssalon in Oldenzaal (Twente) voor verzorgende en ontspannende gezichtsbehandelingen, aromatherapie, rugbehandeling, harsen, verven, epileren, henna wenkbrauwen en gellak. Uitsluitend op afspraak.",
+    "url": "https://www.salonwendy.nl/",
+    "logo": "https://www.salonwendy.nl/img/logo.svg",
+    "image": "https://www.salonwendy.nl/img/landschap.jpg",
+    "telephone": "+31541538153",
+    "email": "info@salonwendy.nl",
+    "priceRange": "€14 - €62",
+    "currenciesAccepted": "EUR",
+    "address": {"@type": "PostalAddress", "streetAddress": "Uiverstraat 39", "postalCode": "7574 BA",
+                "addressLocality": "Oldenzaal", "addressRegion": "Overijssel", "addressCountry": "NL"},
+    "areaServed": [{"@type": "City", "name": n} for n in ("Oldenzaal", "Losser", "Denekamp", "Hengelo", "Enschede", "Dinkelland")],
+    "founder": {"@type": "Person", "name": "Wendy Schwankhuizen-Luttikhuis", "jobTitle": "Schoonheidsspecialiste"},
+    "knowsAbout": ["gezichtsbehandeling", "aromatherapie", "huidverzorging", "huidverbetering", "harsen", "epileren",
+                   "wimpers verven", "wenkbrauwen verven", "henna wenkbrauwen", "gellak", "rugbehandeling"],
+}
+
+
+def euro(prijs: str) -> str:
+    return re.sub(r"[^0-9,]", "", prijs).replace(",", ".")
+
+
+def offer(naam: str, prijs: str, beschrijving: str = "", duur: str = "", url: str = "") -> dict:
+    o = {"@type": "Offer", "price": euro(prijs), "priceCurrency": "EUR",
+         "itemOffered": {"@type": "Service", "name": naam, "provider": {"@id": SALON_LD["@id"]}}}
+    if beschrijving:
+        o["itemOffered"]["description"] = beschrijving
+    if duur:
+        mins = re.search(r"\d+", duur)
+        if mins:
+            o["itemOffered"]["timeRequired"] = f"PT{mins.group(0)}M"
+    if url:
+        o["url"] = SITE + url
+    return o
+
+
+def catalog(naam: str, offers: list[dict]) -> dict:
+    return {"@type": "OfferCatalog", "name": naam, "itemListElement": offers}
+
+
+def faq_html(faq: list[tuple[str, str]], titel: str = "Veelgestelde vragen") -> str:
+    if not faq:
+        return ""
+    items = "".join(f'<details class="faq-item"><summary>{e(q)}</summary><div class="faq-a"><p>{a}</p></div></details>' for q, a in faq)
+    return f"""
+<section class="section section-tint faq">
+  <div class="wrap narrow">
+    <div class="section-head reveal" style="text-align:center"><span class="eyebrow">Goed om te weten</span><h2>{titel}</h2></div>
+    <div class="faq-list reveal">{items}</div>
+  </div>
+</section>"""
+
+
+def ld_script(path: str, title: str, desc: str, crumbs: list[tuple[str, str]], extra: list[dict], faq) -> str:
+    graph = [SALON_LD,
+             {"@type": "WebSite", "@id": SITE + "/#website", "url": SITE + "/", "name": SALON["naam"],
+              "inLanguage": "nl-NL", "publisher": {"@id": SALON_LD["@id"]}},
+             {"@type": "WebPage", "@id": SITE + path + "#webpage", "url": SITE + path, "name": title,
+              "description": desc, "inLanguage": "nl-NL", "isPartOf": {"@id": SITE + "/#website"},
+              "about": {"@id": SALON_LD["@id"]}, "dateModified": VANDAAG}]
+    if crumbs:
+        graph.append({"@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": i + 1, "name": n, "item": SITE + u} for i, (n, u) in enumerate(crumbs)]})
+    if faq:
+        graph.append({"@type": "FAQPage", "mainEntity": [
+            {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": re.sub(r"<[^>]+>", "", a)}} for q, a in faq]})
+    for x in extra:
+        if x.get("@type") == "OfferCatalog":
+            graph.append({"@type": "Service", "name": x["name"], "provider": {"@id": SALON_LD["@id"]},
+                          "areaServed": "Oldenzaal", "hasOfferCatalog": x})
+        else:
+            graph.append(x)
+    data = json.dumps({"@context": "https://schema.org", "@graph": graph}, ensure_ascii=False, indent=1)
+    return f'<script type="application/ld+json">\n{data}\n</script>\n'
+
+
+LLM_PAGES = []  # (titel, pad, beschrijving) voor llms.txt
 CUR = ' aria-current="page"'
 
 # ---------------------------------------------------------------- layout
-def head(title: str, desc: str, path: str) -> str:
-    full = title if title.startswith("Wendy") else f"{title} | {SALON['naam']} Oldenzaal"
+def head(title: str, desc: str, path: str, og: str = "landschap") -> str:
+    full = title if title.startswith("Wendy") else f"{title} | {SALON['naam']}"
     return f"""<!doctype html>
 <html lang="nl">
 <head>
@@ -232,7 +420,10 @@ def head(title: str, desc: str, path: str) -> str:
 <meta property="og:url" content="{SITE}{path}">
 <meta property="og:locale" content="nl_NL">
 <meta name="theme-color" content="#6d5a64">
-<meta property="og:image" content="{SITE}/img/landschap.jpg">
+<meta property="og:image" content="{SITE}/img/{og}.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="LLM-samenvatting">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -337,11 +528,17 @@ def footer() -> str:
 """
 
 
-def page(path: str, title: str, desc: str, body: str, active: str = "", extra_head: str = "") -> None:
-    doc = head(title, desc, path) + extra_head + header(active or path) + body + cta_band() + footer()
+def page(path: str, title: str, desc: str, body: str, active: str = "", extra_head: str = "",
+         crumbs=None, ld=None, faq=None, og: str = "landschap", llm: bool = True) -> None:
+    crumbs = crumbs if crumbs is not None else [("Home", "/")]
+    full = title if title.startswith("Wendy") else f"{title} | {SALON['naam']}"
+    doc = (head(title, desc, path, og) + extra_head + ld_script(path, full, desc, crumbs, ld or [], faq)
+           + header(active or path) + body + faq_html(faq or []) + cta_band() + footer())
     target = OUT / path.strip("/") / "index.html" if path != "/" else OUT / "index.html"
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(doc, encoding="utf-8")
+    target.write_text(responsive(doc), encoding="utf-8")
+    if llm:
+        LLM_PAGES.append((title, path, desc))
 
 
 def page_hero(eyebrow: str, h1: str, lead: str, crumbs: list[tuple[str, str]], after: str = "", photo: str = "") -> str:
@@ -413,7 +610,87 @@ def pricelist(rows) -> str:
         f'<li><span>{e(a)}</span><span class="dots"></span><span class="p">{b}</span></li>' for a, b in rows) + "</ul>"
 
 
+
+# ---------------------------------------------------------------- veelgestelde vragen (gebaseerd op bestaande info)
+TEL_A = f'<a href="tel:{SALON["tel_link"]}">{SALON["tel"]}</a>'
+FAQ_ALGEMEEN = [
+    ("Hoe maak ik een afspraak bij Wendy's Schoonheidssalon?",
+     f"Afspraken maak je telefonisch via {TEL_A}. Er wordt uitsluitend op afspraak gewerkt, zodat de tijd speciaal voor jou gereserveerd is. Voor algemene vragen kun je ook mailen naar <a href=\"mailto:info@salonwendy.nl\">info@salonwendy.nl</a>."),
+    ("Waar zit de salon?",
+     "Wendy's Schoonheidssalon zit aan de Uiverstraat 39, 7574 BA Oldenzaal, in Twente. De salon is goed bereikbaar vanuit onder andere Losser, Denekamp, Hengelo en Enschede."),
+    ("Welke behandelingen kan ik boeken?",
+     "Je kunt kiezen uit 9 gezichtsbehandelingen (kort, huidverzorgend, huidverbeterend en aromatherapie), een uitgebreide rugbehandeling, harsen van benen, armen en oksels, epileren en verven van wenkbrauwen en wimpers, henna wenkbrauwen en gellak voor de nagels."),
+    ("Wat kost een gezichtsbehandeling?",
+     "Een korte gezichtsbehandeling begint bij € 32,00 (30 minuten). Huidverzorgende behandelingen en de aromatherapie A touch of… kosten € 51,50 (60 minuten), de huidverbeterende behandelingen € 61,50 (80 minuten) en de Special Wellness € 62,00 (85 minuten)."),
+    ("Wat als ik verhinderd ben?",
+     "Zeg je afspraak dan tijdig af. Niet nagekomen afspraken worden in rekening gebracht."),
+    ("Kan ik een kadobon kopen?",
+     f"Ja, een kadobon is verkrijgbaar in elk gewenst bedrag. Bel {TEL_A}, dan wordt de kadobon feestelijk voor je verpakt."),
+]
+FAQ_GEZICHT = [
+    ("Welke gezichtsbehandeling past bij mijn huid?",
+     "Voor de jonge huid is de Cucumber treatment ideaal; voor de onzuivere of acne-huid de Purifying treatment. Een droge of vochtarme huid geniet van de Aloë Vera of Caviar Gold treatment, een gevoelige huid van de Sensitive &amp; Calming treatment of A touch of Roses. Voor de rijpere huid en rimpels zijn de Myoxinol anti-wrinkle en Royal Jelly treatment geschikt. Twijfel je? Wendy adviseert je graag."),
+    ("Wat zit er standaard in elke gezichtsbehandeling?",
+     "Tijdens alle gezichtsbehandelingen worden de wenkbrauwen geëpileerd of geharst en worden onzuiverheden verwijderd."),
+    ("Kan ik wimpers verven of bovenlip harsen combineren met een gezichtsbehandeling?",
+     "Ja. Geef het even door bij het maken van de afspraak, zodat er extra tijd gereserveerd wordt. In combinatie met een gezichtsbehandeling kost het eerste losse onderdeel € 5,50 extra en elk volgend onderdeel € 1,50."),
+    ("Met welke producten wordt gewerkt?",
+     "Er wordt gewerkt met de producten van Webecos, aangevuld met pure aromatherapie. Bij de aromatherapiebehandelingen worden de 100% natuurlijke producten van Chi gebruikt."),
+    ("Hoe lang duurt een gezichtsbehandeling?",
+     "Van 30 minuten (Cucumber treatment) tot 85 minuten (Special Wellness). De huidverzorgende behandelingen duren 60 minuten, de huidverbeterende behandelingen 80 minuten."),
+]
+FAQ_AROMA = [
+    ("Wat is het verschil tussen de drie geuren?",
+     "A touch of Roses werkt kalmerend en is ook geschikt voor de zeer gevoelige huid. A touch of Lavender is zeer rustgevend en geschikt voor veel huidtypen, ook de vette huid. A touch of Happiness (sinaasappel, mandarijn en vanille) werkt stimulerend, verwarmend en ontspannend en is geschikt voor alle huidtypen."),
+    ("Wat is de Special Wellness?",
+     "Een behandeling van 85 minuten (€ 62,00) die elke 2 tot 3 maanden wordt aangepast aan het seizoen. Naast de gezichtsmassage krijg je bijvoorbeeld een massage van rug, hoofdhuid of armen, soms een voetenbad of rugscrub."),
+    ("Worden er edelstenen gebruikt?",
+     "Ja. Tijdens de massage worden bij Roses rozenkwarts, bij Lavender amethist en bij Happiness oranje calciet gebruikt."),
+]
+FAQ_HARSEN = [
+    ("Wat kost harsen van de benen?",
+     "Onderbenen harsen kost € 29,50 en hele benen (inclusief liezen) € 39,50."),
+    ("Hoe werken de prijzen van de losse onderdelen?",
+     "Voor epileren of harsen van de wenkbrauwen, harsen van bovenlip of kin en verven van wimpers of wenkbrauwen betaal je € 14,00 voor één onderdeel, oplopend tot € 31,50 voor vijf onderdelen."),
+]
+FAQ_HENNA = [
+    ("Hoe lang blijven henna wenkbrauwen mooi?",
+     "Gemiddeld blijft de henna 5 tot 6 weken op de haartjes zitten en tot wel 2 weken op de huid."),
+    ("Wat is het verschil tussen henna en gewoon verven?",
+     "Bij henna worden niet alleen de haartjes maar ook de huid gekleurd. Daardoor lijken de wenkbrauwen voller."),
+    ("Is henna natuurlijk?",
+     "Ja. Henna is afkomstig van een struik: plantaardig en een zuiver natuurproduct. De henna komt uit Brazilië."),
+]
+FAQ_NAGELS = [
+    ("Hoe lang blijft gellak mooi?",
+     "Twee weken, soms ook langer. Dat hangt af van hoe snel je nagels groeien en van je werk en hobby's."),
+    ("Is gellak hetzelfde als shellac?",
+     "Gellak wordt ook wel gel-nagellak of shellac genoemd. Het is een tussenweg tussen gewone nagellak en gelnagels."),
+    ("Wat kost gellak?",
+     "Gellak kost € 26,50. Het verwijderen van gellak kost € 13,50."),
+]
+FAQ_KADOBON = [
+    ("Voor welk bedrag kan ik een kadobon kopen?",
+     "De kadobon is verkrijgbaar in elk gewenst bedrag."),
+    ("Hoe bestel ik een kadobon?",
+     f"Bel {TEL_A}. De kadobon wordt dan feestelijk voor je verpakt."),
+]
+
+# huidtype-wijzer op basis van de behandelbeschrijvingen
+HUIDWIJZER = [
+    ("Jonge huid", "Cucumber treatment", "korte-behandelingen", "€ 32,00 · 30 min"),
+    ("Onzuivere of acne huid", "Purifying treatment", "korte-behandelingen", "€ 35,50 · 40 min"),
+    ("Droge of vochtarme huid", "Aloë Vera of Caviar Gold treatment", "huidverzorgende-behandelingen", "vanaf € 51,50"),
+    ("Gevoelige huid", "Sensitive &amp; Calming treatment", "huidverzorgende-behandelingen", "€ 51,50 · 60 min"),
+    ("Rijpere huid en rimpels", "Myoxinol anti-wrinkle treatment", "huidverbeterende-en-ontspannende-behandelingen", "€ 61,50 · 80 min"),
+    ("Toe aan totale ontspanning", "Aromatherapie of Special Wellness", "aromatherapie", "vanaf € 51,50"),
+]
+
 # ---------------------------------------------------------------- pagina's
+def group_offers(g: dict) -> list[dict]:
+    return [offer(n, pr, f"{sub}. " + " ".join(t), du, f"/gezichtsbehandelingen/{g['slug']}/") for n, sub, pr, du, t in g["items"]]
+
+
 def build_home() -> None:
     cards = []
     for g in GROEPEN:
@@ -445,12 +722,6 @@ def build_home() -> None:
   <div class="card-meta" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.75)"><span>feestelijk verpakt</span><span class="link" style="color:#ffb3cc">Bekijk</span></div>
 </a>""")
 
-    schema = f"""<script type="application/ld+json">{{
-"@context":"https://schema.org","@type":"BeautySalon","name":"{SALON['naam']}",
-"url":"{SITE}/","telephone":"{SALON['tel_link']}","email":"{SALON['mail']}",
-"address":{{"@type":"PostalAddress","streetAddress":"{SALON['straat']}","postalCode":"{SALON['postcode'].replace(' ', '')}","addressLocality":"{SALON['plaats']}","addressCountry":"NL"}},
-"priceRange":"€€"}}</script>
-"""
     body = f"""
 <section class="hero">
   <div class="wrap hero-grid">
@@ -554,9 +825,10 @@ def build_home() -> None:
   </div>
 </section>
 """
-    page("/", f"{SALON['naam']} in Oldenzaal | Gezicht, lichaam & geest",
-         "Geniet en ontspan bij Wendy's Schoonheidssalon in Oldenzaal: gezichtsbehandelingen, aromatherapie, harsen, verven, epileren, henna wenkbrauwen en gellak.",
-         body, active="/", extra_head=schema)
+    page("/", f"{SALON['naam']} in Oldenzaal | Gezichtsbehandelingen & aromatherapie",
+         "Schoonheidssalon in Oldenzaal: ontspannende gezichtsbehandelingen, aromatherapie, harsen, henna wenkbrauwen en gellak. Bel 0541 538 153 voor een afspraak.",
+         body, active="/", crumbs=[("Home", "/")], faq=FAQ_ALGEMEEN,
+         ld=[catalog("Gezichtsbehandelingen", [o for g in GROEPEN for o in group_offers(g)])])
 
 
 def build_gezicht() -> None:
@@ -565,23 +837,41 @@ def build_gezicht() -> None:
     body = page_hero("Gezichtsbehandelingen", "Stralend <em>de dag</em> door",
                      "Kies de gezichtsbehandeling die het beste bij jou past: van een korte frisse behandeling tot een uitgebreid moment voor lichaam en geest.",
                      [("/", "Home"), ("", "Gezichtsbehandelingen")], pills, photo="header-gezicht.jpg")
-    body += f'<section class="section" style="padding-top:20px"><div class="wrap">{CALLOUT}' + \
+    gids = "".join(f'<a class="skin reveal" href="/gezichtsbehandelingen/{sl}/"><span class="skin-type">{t}</span><strong>{b}</strong><span class="skin-meta">{m}</span></a>'
+                   for t, b, sl, m in HUIDWIJZER)
+    body += f"""
+<section class="section" style="padding-bottom:0">
+  <div class="wrap">
+    <div class="section-head split reveal"><div><span class="eyebrow">Huidtype-wijzer</span><h2>Welke behandeling past bij <em>jouw huid</em>?</h2></div>
+    <p>Kies je huidtype of wens en ontdek welke gezichtsbehandeling het beste bij je past. Twijfel je? Wendy adviseert je graag.</p></div>
+    <div class="skins">{gids}</div>
+  </div>
+</section>"""
+    body += f'<section class="section"><div class="wrap">{CALLOUT}' + \
             "".join(group_block(g) for g in GROEPEN) + "</div></section>"
-    page("/gezichtsbehandelingen/", "Gezichtsbehandelingen",
-         "Negen heerlijke gezichtsbehandelingen bij Wendy's Schoonheidssalon in Oldenzaal: korte, huidverzorgende, huidverbeterende behandelingen en aromatherapie.",
-         body)
+    page("/gezichtsbehandelingen/", "Gezichtsbehandelingen in Oldenzaal",
+         "9 gezichtsbehandelingen in Oldenzaal: kort, huidverzorgend, huidverbeterend en aromatherapie, van € 32,00 tot € 62,00. Vind de behandeling voor jouw huid.",
+         body, crumbs=[("Home", "/"), ("Gezichtsbehandelingen", "/gezichtsbehandelingen/")], faq=FAQ_GEZICHT,
+         og="header-gezicht", ld=[catalog("Gezichtsbehandelingen", [o for g in GROEPEN for o in group_offers(g)])])
 
     for g in GROEPEN:
         pills = '<div class="pills">' + "".join(
             f'<a href="/gezichtsbehandelingen/{o["slug"]}/"{CUR if o is g else ""}>{e(o["kort"])}</a>'
             for o in GROEPEN) + "</div>"
         body = page_hero("Gezichtsbehandelingen", g["hero"], g["intro"],
-                         [("/", "Home"), ("/gezichtsbehandelingen/", "Gezichtsbehandelingen"), ("", g["titel"])], pills, photo="header-gezicht.jpg")
+                         [("/", "Home"), ("/gezichtsbehandelingen/", "Gezichtsbehandelingen"), ("", g["titel"])], pills, photo=g["header"])
         block = group_block(g, link=False).replace('<div class="group-head reveal">', '<div class="group-head reveal" hidden>', 1)
         body += f'<section class="section" style="padding-top:20px"><div class="wrap">{CALLOUT}{block}</div></section>'
-        page(f"/gezichtsbehandelingen/{g['slug']}/", g["titel"],
-             f"{g['titel']} bij Wendy's Schoonheidssalon in Oldenzaal. {g['intro']}", body,
-             active="/gezichtsbehandelingen/")
+        prijzen = sorted({it[2] for it in g["items"]}, key=lambda x: float(euro(x)))
+        kort_titel = g["titel"].replace(" & ontspannende", "")
+        desc = f"{kort_titel} in Oldenzaal: " + " en ".join(it[0] for it in g["items"]) + f". Vanaf {prijzen[0]}."
+        if len(desc) < 125:
+            desc += " Bel 0541 538 153 voor een afspraak."
+        page(f"/gezichtsbehandelingen/{g['slug']}/", f"{kort_titel} in Oldenzaal", desc, body,
+             active="/gezichtsbehandelingen/", og=g["header"].replace(".jpg", ""),
+             crumbs=[("Home", "/"), ("Gezichtsbehandelingen", "/gezichtsbehandelingen/"), (g["titel"], f"/gezichtsbehandelingen/{g['slug']}/")],
+             faq=FAQ_AROMA if g["slug"] == "aromatherapie" else FAQ_GEZICHT[:2],
+             ld=[catalog(g["titel"], group_offers(g))])
 
 
 def build_overig() -> None:
@@ -622,12 +912,15 @@ def build_overig() -> None:
     </a>
   </div>
 </section>"""
-    page("/overige_behandelingen/", "Harsen, verven & epileren",
-         "Harsen van benen, armen en oksels, epileren en verven van wenkbrauwen en wimpers bij Wendy's Schoonheidssalon in Oldenzaal. Bekijk de prijzen.",
-         body)
+    page("/overige_behandelingen/", "Harsen, epileren & verven in Oldenzaal",
+         "Harsen van benen, armen en oksels, epileren en verven van wenkbrauwen en wimpers in Oldenzaal. Losse onderdelen vanaf € 14,00, onderbenen harsen € 29,50.",
+         body, og="header-benen", faq=FAQ_HARSEN,
+         crumbs=[("Home", "/"), ("Harsen, epileren & verven", "/overige_behandelingen/")],
+         ld=[catalog("Harsen, epileren en verven", [offer(f"Losse onderdelen gezicht: {a.lower()}", b) for a, b in PRIJS_ONDERDELEN]
+                     + [offer(f"Harsen {a.lower()}", b) for a, b in HARSEN])])
 
 
-def feature_page(path, title, desc, eyebrow, h1, lead, crumb, art_icon, h2, paras, checks, price_html, extra="", photo="", hero_photo=""):
+def feature_page(path, title, desc, eyebrow, h1, lead, crumb, art_icon, h2, paras, checks, price_html, extra="", photo="", hero_photo="", faq=None, ld=None):
     ch = "".join(f"<li>{ICONS['check']}<span>{c}</span></li>" for c in checks)
     ps = "".join(f"<p>{p}</p>" for p in paras)
     body = page_hero(eyebrow, h1, lead, [("/", "Home"), ("", crumb)], photo=hero_photo)
@@ -647,13 +940,14 @@ def feature_page(path, title, desc, eyebrow, h1, lead, crumb, art_icon, h2, para
   </div>
   {extra}
 </section>"""
-    page(path, title, desc, body)
+    page(path, title, desc, body, faq=faq, ld=ld, og=(hero_photo or "landschap.jpg").replace(".jpg", ""),
+         crumbs=[("Home", "/"), (crumb, path)])
 
 
 def build_henna() -> None:
     feature_page(
-        "/henna-wenkbrauwen/", "Henna wenkbrauwen",
-        f"Henna wenkbrauwen bij Wendy's Schoonheidssalon in Oldenzaal: tot wel 6 weken volle en strakke wenkbrauwen voor {HENNA_PRIJS}.",
+        "/henna-wenkbrauwen/", "Henna wenkbrauwen in Oldenzaal",
+        f"Henna wenkbrauwen in Oldenzaal: tot wel 6 weken volle en strakke wenkbrauwen met natuurlijke henna. {HENNA_PRIJS}, ca. 20 minuten. Bekijk voor- en na-foto's.",
         "Henna wenkbrauwen", "Voller, strakker <em>en mooier</em>",
         "Tot wel 6 weken mooie, volle en strakke wenkbrauwen, met een zuiver natuurproduct.",
         "Henna wenkbrauwen", "brow", "Wat maakt henna <em>anders</em>?",
@@ -663,13 +957,14 @@ def build_henna() -> None:
          "Tot wel 6 weken resultaat op de haartjes", "Tot wel 2 weken resultaat op de huid"],
         f'<div class="pricetag"><b>{HENNA_PRIJS}</b><span>· ca. 20 minuten</span></div>',
         extra='<div class="wrap"><figure class="voorna reveal" style="margin-left:0;margin-right:0"><img src="/img/henna-voor-na.jpg" alt="Wenkbrauwen voor en na de henna behandeling" width="1490" height="364" loading="lazy"></figure></div>',
-        photo="card-henna.jpg", hero_photo="header-henna.jpg")
+        photo="card-henna.jpg", hero_photo="header-henna.jpg", faq=FAQ_HENNA,
+        ld=[catalog("Henna wenkbrauwen", [offer("Henna wenkbrauwen", HENNA_PRIJS, "Natuurlijke henna voor volle, strakke wenkbrauwen; tot 6 weken resultaat op de haartjes en tot 2 weken op de huid.", "20 min", "/henna-wenkbrauwen/")])])
 
 
 def build_nagels() -> None:
     feature_page(
-        "/nagels/", "Gellak nagels",
-        "Gellak bij Wendy's Schoonheidssalon in Oldenzaal: twee weken of langer prachtige, stevige nagels. Gellak € 26,50.",
+        "/nagels/", "Gellak nagels in Oldenzaal",
+        "Gellak (shellac) in Oldenzaal: twee weken of langer prachtige, stevige nagels. Gellak € 26,50, verwijderen € 13,50. Bel 0541 538 153 voor een afspraak.",
         "Nagels", "De mooiste nagels voor <em>speciale momenten</em>",
         "Glanzende, stevige nagels die er twee weken of langer prachtig uitzien.",
         "Nagels", "nail", "Wat is <em>gellak</em> precies?",
@@ -677,20 +972,21 @@ def build_nagels() -> None:
          "Je nagels zien er twee weken mooi uit, soms ook langer. Dat hangt af van hoe snel je nagels groeien en van je werk en hobby's."],
         ["Twee weken of langer mooie nagels", "Extra stevigheid: minder scheuren en afbreken", "Hoogglanzend resultaat"],
         f'<div style="max-width:420px;margin-bottom:1.8rem">{pricelist(NAGELS)}</div>',
-        photo="header-nagels.jpg", hero_photo="header-nagels.jpg")
+        photo="header-nagels.jpg", hero_photo="header-nagels.jpg", faq=FAQ_NAGELS,
+        ld=[catalog("Nagels", [offer(f"{a}", b, url="/nagels/") for a, b in NAGELS])])
 
 
 def build_kadobon() -> None:
     feature_page(
-        "/kadobon/", "Kadobon",
-        "Verras iemand met een kadobon van Wendy's Schoonheidssalon in Oldenzaal. Verkrijgbaar in elk gewenst bedrag en feestelijk verpakt.",
+        "/kadobon/", "Kadobon schoonheidssalon Oldenzaal",
+        "Verras iemand met een kadobon van Wendy's Schoonheidssalon in Oldenzaal: in elk gewenst bedrag, te besteden aan alle behandelingen en feestelijk verpakt.",
         "Kadobon", "Verras iemand die je <em>liefhebt</em>",
         "Een moment van ontspanning is het mooiste cadeau. Voor een verjaardag, Moederdag, als bedankje, of zomaar.",
         "Kadobon", "gift", "Een cadeau vol <em>aandacht</em>",
         ["Verras vrienden of familie eens met een kadobon van Wendy's Schoonheidssalon. De bon is verkrijgbaar in elk gewenst bedrag, of voor een specifieke behandeling.",
          f"Neem telefonisch contact op via <a href=\"tel:{SALON['tel_link']}\">{SALON['tel']}</a>, dan wordt de kadobon feestelijk voor je verpakt."],
         ["In elk gewenst bedrag", "Feestelijk verpakt", "Te besteden aan alle behandelingen"],
-        "", photo="header-kadobon.jpg", hero_photo="header-kadobon.jpg")
+        "", photo="header-kadobon.jpg", hero_photo="header-kadobon.jpg", faq=FAQ_KADOBON)
 
 
 def build_contact() -> None:
@@ -719,36 +1015,41 @@ def build_contact() -> None:
   </div>
 </section>"""
     page("/contact/", "Contact & afspraak maken",
-         f"Maak een afspraak bij Wendy's Schoonheidssalon, {SALON['straat']} in {SALON['plaats']}. Bel {SALON['tel']} of mail {SALON['mail']}.",
-         body)
+         f"Maak een afspraak bij Wendy's Schoonheidssalon, {SALON['straat']}, {SALON['postcode']} {SALON['plaats']}. Bel {SALON['tel']} of mail {SALON['mail']}. Uitsluitend op afspraak.",
+         body, crumbs=[("Home", "/"), ("Contact", "/contact/")], faq=FAQ_ALGEMEEN[:2] + FAQ_ALGEMEEN[4:5],
+         ld=[{"@type": "ContactPage", "url": SITE + "/contact/", "mainEntity": {"@id": SALON_LD["@id"]}}])
 
 
 def build_privacy() -> None:
     n = SALON["naam"]
+    m = f'<a href="mailto:{SALON["mail"]}">{SALON["mail"]}</a>'
     secties = [
-        ("", [f"{n}, gevestigd aan {SALON['straat']}, {SALON['postcode']} {SALON['plaats']}, is verantwoordelijk voor de verwerking van persoonsgegevens zoals weergegeven in deze privacyverklaring."]),
-        ("Contactgegevens", [f"{SITE}<br>{SALON['straat']}, {SALON['postcode']} {SALON['plaats']}<br>{SALON['tel']}",
-                             f"Wendy Schwankhuizen-Luttikhuis is de Functionaris Gegevensbescherming van {n}. Zij is te bereiken via <a href=\"mailto:{SALON['mail']}\">{SALON['mail']}</a>."]),
-        ("Persoonsgegevens die wij verwerken", [f"{n} verwerkt je persoonsgegevens doordat je gebruikmaakt van onze diensten en/of omdat je deze zelf aan ons verstrekt. Hieronder vind je een overzicht van de persoonsgegevens die wij verwerken:",
+        ("", [f"{n}, gevestigd aan {SALON['straat']} {SALON['postcode']} {SALON['plaats']}, is verantwoordelijk voor de verwerking van persoonsgegevens zoals weergegeven in deze privacyverklaring."]),
+        ("Contactgegevens", [f"{SITE}/<br>{SALON['straat']}, {SALON['postcode']} {SALON['plaats']}<br>+31 {SALON['tel']}",
+                             f"Wendy Schwankhuizen-Luttikhuis is de Functionaris Gegevensbescherming van {n}. Zij is te bereiken via {m}."]),
+        ("Persoonsgegevens die wij verwerken", [f"{n} verwerkt uw persoonsgegevens doordat u gebruik maakt van onze diensten en/of omdat u deze zelf aan ons verstrekt.",
+                                                "Hieronder vindt u een overzicht van de persoonsgegevens die wij verwerken:",
                                                 "<ul><li>Voor- en achternaam</li><li>Geboortedatum</li><li>Adresgegevens</li><li>Telefoonnummer</li><li>E-mailadres</li></ul>"]),
-        ("Bijzondere en/of gevoelige persoonsgegevens", ["Onze website en/of dienst heeft niet de intentie gegevens te verzamelen over websitebezoekers die jonger zijn dan 16 jaar, tenzij ze toestemming hebben van ouders of voogd. We kunnen echter niet controleren of een bezoeker ouder dan 16 is. Wij raden ouders dan ook aan betrokken te zijn bij de online activiteiten van hun kinderen.",
-                                                         f"Ben je ervan overtuigd dat wij zonder die toestemming persoonlijke gegevens hebben verzameld over een minderjarige? Neem dan contact met ons op via <a href=\"mailto:{SALON['mail']}\">{SALON['mail']}</a>, dan verwijderen wij deze informatie."]),
-        ("Doel en grondslag", [f"{n} verwerkt je persoonsgegevens voor de volgende doelen:",
-                               "<ul><li>Verzenden van onze nieuwsbrief en/of reclamefolder</li><li>Je te kunnen bellen of e-mailen indien dit nodig is om onze dienstverlening uit te kunnen voeren</li><li>Je te informeren over wijzigingen van onze diensten en producten</li></ul>"]),
-        ("Geautomatiseerde besluitvorming", [f"{n} neemt niet op basis van geautomatiseerde verwerkingen besluiten over zaken die (aanzienlijke) gevolgen kunnen hebben voor personen. {n} gebruikt de volgende computerprogramma's of -systemen: administratieve software voor schoonheidssalons."]),
-        ("Hoe lang we persoonsgegevens bewaren", [f"{n} bewaart je persoonsgegevens niet langer dan strikt nodig is om de doelen te realiseren waarvoor je gegevens worden verzameld."]),
-        ("Delen van persoonsgegevens met derden", [f"{n} verstrekt nooit je persoonsgegevens aan derden, alleen als dit nodig is voor de uitvoering van onze overeenkomst met jou of om te voldoen aan een wettelijke verplichting."]),
-        ("Cookies", ["Deze website gebruikt Google Analytics 4 om bij te houden hoe bezoekers de website gebruiken, zodat we de website kunnen verbeteren. Google Analytics plaatst hiervoor cookies. Je kunt cookies altijd weigeren of verwijderen via de instellingen van je browser. Voor de lettertypen wordt gebruikgemaakt van Google Fonts."]),
-        ("Gegevens inzien, aanpassen of verwijderen", [f"Je hebt het recht om je persoonsgegevens in te zien, te corrigeren of te verwijderen. Daarnaast heb je het recht om je eventuele toestemming voor de gegevensverwerking in te trekken of bezwaar te maken tegen de verwerking van je persoonsgegevens, en heb je het recht op gegevensoverdraagbaarheid. Je kunt een verzoek sturen naar <a href=\"mailto:{SALON['mail']}\">{SALON['mail']}</a>. We reageren zo snel mogelijk, maar binnen vier weken, op je verzoek.",
-                                                       "Je hebt ook de mogelijkheid om een klacht in te dienen bij de nationale toezichthouder, de Autoriteit Persoonsgegevens."]),
-        ("Hoe wij persoonsgegevens beveiligen", [f"{n} neemt de bescherming van je gegevens serieus en neemt passende maatregelen om misbruik, verlies, onbevoegde toegang, ongewenste openbaarmaking en ongeoorloofde wijziging tegen te gaan. Heb je de indruk dat je gegevens niet goed beveiligd zijn of zijn er aanwijzingen van misbruik? Neem dan contact op via <a href=\"mailto:{SALON['mail']}\">{SALON['mail']}</a>."]),
+        ("Bijzondere en/of gevoelige persoonsgegevens die wij verwerken", [f"Onze website en/of dienst heeft niet de intentie gegevens te verzamelen over websitebezoekers die jonger zijn dan 16 jaar. Tenzij ze toestemming hebben van ouders of voogd. We kunnen echter niet controleren of een bezoeker ouder dan 16 is. Wij raden ouders dan ook aan betrokken te zijn bij de online activiteiten van hun kinderen, om zo te voorkomen dat er gegevens over kinderen verzameld worden zonder ouderlijke toestemming. Als u er van overtuigd bent dat wij zonder die toestemming persoonlijke gegevens hebben verzameld over een minderjarige, neem dan contact met ons op via {m}, dan verwijderen wij deze informatie."]),
+        ("Met welk doel en op basis van welke grondslag wij persoonsgegevens verwerken", [f"{n} verwerkt uw persoonsgegevens voor de volgende doelen:",
+                               "<ul><li>Verzenden van onze nieuwsbrief en/of reclamefolder</li><li>U te kunnen bellen of e-mailen indien dit nodig is om onze dienstverlening uit te kunnen voeren</li><li>U te informeren over wijzigingen van onze diensten en producten</li></ul>"]),
+        ("Geautomatiseerde besluitvorming", [f"{n} neemt niet op basis van geautomatiseerde verwerkingen besluiten over zaken die (aanzienlijke) gevolgen kunnen hebben voor personen. Het gaat hier om besluiten die worden genomen door computerprogramma's of -systemen, zonder dat daar een mens (bijvoorbeeld een medewerker van {n}) tussen zit. {n} gebruikt de volgende computerprogramma's of -systemen: administratieve software voor schoonheidssalons."]),
+        ("Hoe lang we persoonsgegevens bewaren", [f"{n} bewaart uw persoonsgegevens niet langer dan strikt nodig is om de doelen te realiseren waarvoor uw gegevens worden verzameld."]),
+        ("Delen van persoonsgegevens met derden", [f"{n} verstrekt nooit uw persoonsgegevens aan derden, alleen als dit nodig is voor de uitvoering van onze overeenkomst met u of om te voldoen aan een wettelijke verplichting."]),
+        ("Cookies, of vergelijkbare technieken, die wij gebruiken", [f"{n} gebruikt technische en functionele cookies en analytische cookies van Google Analytics. Een cookie is een klein tekstbestand dat bij het eerste bezoek aan deze website wordt opgeslagen op uw computer, tablet of smartphone. Met Google Analytics houden wij bij hoe bezoekers de website gebruiken, zodat wij de website kunnen optimaliseren. U kunt zich afmelden voor cookies door uw internetbrowser zo in te stellen dat deze geen cookies meer opslaat. Daarnaast kunt u ook alle informatie die eerder is opgeslagen via de instellingen van uw browser verwijderen."]),
+        ("Gegevens inzien, aanpassen of verwijderen", [f"U heeft het recht om uw persoonsgegevens in te zien, te corrigeren of te verwijderen. Daarnaast heeft u het recht om uw eventuele toestemming voor de gegevensverwerking in te trekken of bezwaar te maken tegen de verwerking van uw persoonsgegevens door {n} en heeft u het recht op gegevensoverdraagbaarheid. Dat betekent dat u bij ons een verzoek kunt indienen om de persoonsgegevens die wij van u beschikken in een computerbestand naar u of een ander, door u genoemde organisatie, te sturen.",
+                                                       f"U kunt een verzoek tot inzage, correctie, verwijdering, gegevensoverdraging van uw persoonsgegevens of verzoek tot intrekking van uw toestemming of bezwaar op de verwerking van uw persoonsgegevens sturen naar {m}.",
+                                                       "Om er zeker van te zijn dat het verzoek tot inzage door u is gedaan, vragen wij u een kopie van uw identiteitsbewijs met het verzoek mee te sturen. Maak in deze kopie uw pasfoto, MRZ (machine readable zone, de strook met nummers onderaan het paspoort), paspoortnummer en Burgerservicenummer (BSN) zwart. Dit ter bescherming van uw privacy. We reageren zo snel mogelijk, maar binnen vier weken, op uw verzoek.",
+                                                       f"{n} wil u er tevens op wijzen dat u de mogelijkheid heeft om een klacht in te dienen bij de nationale toezichthouder, de Autoriteit Persoonsgegevens. Dat kan via <a href=\"https://autoriteitpersoonsgegevens.nl/nl/contact-met-de-autoriteit-persoonsgegevens/tip-ons\" rel=\"noopener\">autoriteitpersoonsgegevens.nl</a>."]),
+        ("Hoe wij persoonsgegevens beveiligen", [f"{n} neemt de bescherming van uw gegevens serieus en neemt passende maatregelen om misbruik, verlies, onbevoegde toegang, ongewenste openbaarmaking en ongeoorloofde wijziging tegen te gaan. Als u de indruk heeft dat uw gegevens niet goed beveiligd zijn of er aanwijzingen zijn van misbruik, neem dan contact op via {m}."]),
     ]
     inner = "".join((f"<h2>{t}</h2>" if t else "") + "".join(p if p.startswith("<ul") else f"<p>{p}</p>" for p in ps)
                     for t, ps in secties)
-    body = page_hero("Privacy", "Privacy<em>verklaring</em>", "Zo gaan wij om met je persoonsgegevens.",
-                     [("/", "Home"), ("", "Privacyverklaring")])
-    body += f'<section class="section" style="padding-top:10px"><div class="wrap prose">{inner}</div></section>'
-    page("/privacy/", "Privacyverklaring", f"Privacyverklaring van {n} in {SALON['plaats']}.", body)
+    body = page_hero("Privacy", "Privacy<em>verklaring</em>", "Zo gaan wij om met uw persoonsgegevens.",
+                     [("/", "Home"), ("", "Privacyverklaring")], photo="header-aroma.jpg")
+    body += f'<section class="section"><div class="wrap prose">{inner}</div></section>'
+    page("/privacy/", "Privacyverklaring", f"Privacyverklaring van {n} in {SALON['plaats']}.", body,
+         crumbs=[("Home", "/"), ("Privacyverklaring", "/privacy/")], og="header-aroma", llm=False)
 
 
 def build_404() -> None:
@@ -757,7 +1058,7 @@ def build_404() -> None:
                      [("/", "Home"), ("", "Niet gevonden")],
                      '<div class="btns" style="justify-content:center;margin-top:2rem"><a class="btn btn-primary" href="/">Naar de homepage</a><a class="btn btn-ghost" href="/gezichtsbehandelingen/">Behandelingen</a></div>')
     doc = head("Pagina niet gevonden", "Pagina niet gevonden.", "/404") + header("") + body + footer()
-    (OUT / "404.html").write_text(doc.replace('<link rel="canonical" href="https://www.salonwendy.nl/404">',
+    (OUT / "404.html").write_text(responsive(doc).replace('<link rel="canonical" href="https://www.salonwendy.nl/404">',
                                               '<meta name="robots" content="noindex">'), encoding="utf-8")
 
 
@@ -765,17 +1066,89 @@ def build_static() -> None:
     shutil.copy(ROOT / "src" / "style.css", OUT / "style.css")
     shutil.copy(ROOT / "src" / "site.js", OUT / "site.js")
     shutil.copy(ROOT / "src" / "_headers", OUT / "_headers")
-    shutil.copytree(ROOT / "src" / "img", OUT / "img")
     (OUT / "favicon.svg").write_text(
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#6d5a64"/>'
         '<text x="32" y="44" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="36" fill="#fff">W</text>'
         '<circle cx="47" cy="17" r="4" fill="#e73b73"/></svg>', encoding="utf-8")
-    urls = ["/", "/gezichtsbehandelingen/"] + [f"/gezichtsbehandelingen/{g['slug']}/" for g in GROEPEN] + \
-           ["/overige_behandelingen/", "/henna-wenkbrauwen/", "/nagels/", "/kadobon/", "/contact/", "/privacy/"]
+    # oude URL's zonder slash en verborgen pagina's van de oude site netjes doorsturen
+    (OUT / "_redirects").write_text(
+        "/gezichtsbehandelingen/mooi /gezichtsbehandelingen/korte-behandelingen/ 301\n"
+        "/gezichtsbehandelingen/special /gezichtsbehandelingen/aromatherapie/ 301\n"
+        "/thuispakketten /contact/ 301\n"
+        "/node/* / 301\n"
+        "/user/* / 301\n", encoding="utf-8")
+
+
+def build_seo_files() -> None:
+    urls = ["/"] + [p for _, p, _ in LLM_PAGES if p != "/"] + ["/privacy/"]
     (OUT / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-        "".join(f"  <url><loc>{SITE}{u}</loc></url>\n" for u in urls) + "</urlset>\n", encoding="utf-8")
-    (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n", encoding="utf-8")
+        "".join(f"  <url><loc>{SITE}{u}</loc><lastmod>{VANDAAG}</lastmod></url>\n" for u in urls) + "</urlset>\n", encoding="utf-8")
+    bots = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-SearchBot", "Claude-User", "PerplexityBot",
+            "Perplexity-User", "Google-Extended", "Applebot-Extended", "Bingbot", "Googlebot", "CCBot", "meta-externalagent"]
+    (OUT / "robots.txt").write_text(
+        "# Alle zoekmachines en AI-assistenten zijn welkom\n" + "".join(f"User-agent: {b}\nAllow: /\n\n" for b in bots)
+        + f"User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n", encoding="utf-8")
+
+    # llms.txt: compacte, feitelijke samenvatting voor AI-assistenten (https://llmstxt.org)
+    lijst = "\n".join(f"- [{t}]({SITE}{p}): {d}" for t, p, d in LLM_PAGES)
+    behandelingen = []
+    for g in GROEPEN:
+        behandelingen.append(f"\n### {g['titel']}\n")
+        for n_, sub, pr, du, tekst in g["items"]:
+            behandelingen.append(f"- **{n_}** ({sub}): {pr}, {du}. {' '.join(tekst)}")
+    overig = "\n".join([f"- {a}: {b}" for a, b in PRIJS_ONDERDELEN] + [f"- In combinatie met gezichtsbehandeling, {a.lower()}: {b}" for a, b in COMBI]
+                       + [f"- Harsen {a.lower()}: {b}" for a, b in HARSEN] + [f"- Henna wenkbrauwen: {HENNA_PRIJS} (ca. 20 min)"]
+                       + [f"- {a}: {b}" for a, b in NAGELS])
+    faq = "\n".join(f"**{q}**\n{re.sub(r'<[^>]+>', '', a)}\n" for q, a in FAQ_ALGEMEEN + FAQ_GEZICHT + FAQ_HENNA + FAQ_NAGELS)
+    kort = f"""# {SALON['naam']}
+
+> Schoonheidssalon in Oldenzaal (Twente, Overijssel) van schoonheidsspecialiste Wendy Schwankhuizen-Luttikhuis. Verzorgende en ontspannende gezichtsbehandelingen, aromatherapie, rugbehandeling, harsen, epileren, verven, henna wenkbrauwen en gellak. Uitsluitend op afspraak; afspraken telefonisch.
+
+- Adres: {SALON['straat']}, {SALON['postcode']} {SALON['plaats']}, Nederland
+- Telefoon (afspraken): {SALON['tel']} (+31 541 538 153)
+- E-mail: {SALON['mail']}
+- Website: {SITE}/
+- Producten: Webecos huidverzorging, Chi aromatherapie (100% natuurlijk)
+- Prijzen: van € 14,00 (los onderdeel) tot € 62,00 (Special Wellness, 85 min)
+
+## Pagina's
+
+{lijst}
+
+## Optioneel
+
+- [Volledige inhoud met alle behandelingen en prijzen]({SITE}/llms-full.txt)
+- [Privacyverklaring]({SITE}/privacy/)
+"""
+    (OUT / "llms.txt").write_text(kort, encoding="utf-8")
+    vol = kort + f"""
+## Gezichtsbehandelingen
+
+Tijdens alle gezichtsbehandelingen worden de wenkbrauwen geëpileerd of geharst en worden onzuiverheden verwijderd.
+{chr(10).join(behandelingen)}
+
+### Aromatherapie: geuren en edelstenen
+""" + "\n".join(f"- **{t}** (edelsteen: {st}): {txt}" for _, _, t, st, txt in GEUREN) + f"""
+
+## Harsen, epileren, verven, henna en nagels
+
+Losse onderdelen gezicht: {", ".join(LOSSE_ONDERDELEN).lower()}.
+
+{overig}
+
+## Kadobon
+
+Verkrijgbaar in elk gewenst bedrag, feestelijk verpakt. Bestellen via {SALON['tel']}.
+
+## Afspraken
+
+Er wordt uitsluitend op afspraak gewerkt. Niet nagekomen afspraken worden in rekening gebracht.
+
+## Veelgestelde vragen
+
+{faq}"""
+    (OUT / "llms-full.txt").write_text(vol, encoding="utf-8")
 
 
 def main() -> None:
@@ -783,6 +1156,7 @@ def main() -> None:
         shutil.rmtree(OUT)
     OUT.mkdir()
     build_static()
+    make_images()
     build_home()
     build_gezicht()
     build_overig()
@@ -792,6 +1166,7 @@ def main() -> None:
     build_contact()
     build_privacy()
     build_404()
+    build_seo_files()
     print("Klaar:", sum(1 for _ in OUT.rglob("*.html")), "pagina's in", OUT)
 
 
