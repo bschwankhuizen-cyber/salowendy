@@ -616,7 +616,6 @@ def page_hero(eyebrow: str, h1: str, lead: str, crumbs: list[tuple[str, str]], a
 <section class="{cls}">
   {bg}
   <div class="wrap">
-    <nav class="crumbs" aria-label="Kruimelpad">{cr}</nav>
     <span class="eyebrow">{eyebrow}</span>
     <h1>{h1}</h1>
     <p class="lead">{lead}</p>
