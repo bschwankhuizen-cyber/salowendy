@@ -602,3 +602,22 @@ section { position: relative; }
 }
 .voorna-grid figure:last-child figcaption { background: var(--rose); color: #fff; }
 @media (max-width: 640px) { .voorna-grid { grid-template-columns: 1fr; } }
+
+/* Homepage: vloeiender overgangen */
+.hero-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 140px; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #fff 100%); }
+.welcome-section { padding-top: clamp(40px, 6vw, 80px); }
+.band-aroma { min-height: 0; align-items: center; text-align: center; }
+.band-aroma::after { background: linear-gradient(180deg, rgba(91,77,84,.25) 0%, rgba(91,77,84,.55) 100%); }
+.band-aroma .wrap { padding: clamp(70px, 9vw, 120px) 0 clamp(150px, 16vw, 210px); display: flex; flex-direction: column; align-items: center; }
+.band-aroma .eyebrow::after { content: ""; width: 28px; height: 1px; background: currentColor; }
+.band-aroma h2 { max-width: none; }
+.band-aroma h2 em { color: #ffb3cc; }
+.band-aroma p { margin: 0 auto; }
+.aroma-section { padding-top: 0; }
+.aroma-section .aroma { margin-top: calc(-1 * clamp(110px, 12vw, 160px)) !important; position: relative; z-index: 2; }
+.aroma-section .scent { box-shadow: var(--shadow); }
+@media (max-width: 860px) {
+  .hero-fade { display: none; }
+}
+@media (max-width: 860px) { .welcome > .reveal:last-child { order: -1; } }

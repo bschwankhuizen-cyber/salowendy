@@ -795,6 +795,7 @@ def build_home() -> None:
     body = f"""
 <section class="hero hero-photo">
   <img class="hero-img" src="/img/hero-home.jpg" alt="" fetchpriority="high">
+  <span class="hero-fade" aria-hidden="true"></span>
   <div class="wrap">
     <div class="hero-content reveal">
       <span class="eyebrow">Schoonheidssalon in Oldenzaal</span>
@@ -813,17 +814,7 @@ def build_home() -> None:
   </div>
 </section>
 
-<section class="band">
-  <img src="/img/landschap.jpg" alt="Lavendelveld bij zonsondergang" width="1600" height="450" loading="lazy">
-  <div class="wrap reveal">
-    <span class="eyebrow" style="color:#ffb3cc">Aromatherapie</span>
-    <h2>Geniet van totale ontspanning en heerlijke aroma's</h2>
-    <p>Kies uit maar liefst 9 behandelingen voor de verzorging van je huid, voor huidverbetering of voor pure ontspanning.</p>
-    <a class="btn btn-primary" href="/gezichtsbehandelingen/">Bekijk de behandelingen</a>
-  </div>
-</section>
-
-<section class="section section-tint">
+<section class="section welcome-section">
   <div class="wrap welcome">
     <div class="reveal"><div class="welcome-photo"><img src="/img/aroma-olie.jpg" alt="Aromatherapie met pure etherische olie" width="1500" height="1000" loading="lazy"></div>
     <blockquote class="welcome-quote">Met de producten van Webecos, aangevuld met pure aromatherapie, geniet je optimaal en halen we het beste in je naar boven.<cite>Wendy</cite></blockquote></div>
@@ -841,7 +832,7 @@ def build_home() -> None:
   </div>
 </section>
 
-<section class="section">
+<section class="section section-tint">
   <div class="wrap">
     <div class="section-head split reveal">
       <div><span class="eyebrow">Behandelingen</span><h2>Kies wat <em>jij</em> nodig hebt</h2></div>
@@ -851,29 +842,18 @@ def build_home() -> None:
   </div>
 </section>
 
-<section class="section section-tint">
-  <div class="wrap">
-    <div class="section-head center reveal" style="text-align:center">
-      <span class="eyebrow">Aromatherapie</span>
-      <h2>Welke geur kies <em>jij</em> vandaag?</h2>
-      <p class="lead narrow center">Elke geur heeft zijn eigen werking. Tijdens de massage worden bijpassende edelstenen gebruikt.</p>
-    </div>
-    {scents_html("")}
-    <p class="center" style="text-align:center;margin-top:40px"><a class="link" href="/gezichtsbehandelingen/aromatherapie/">Ontdek de aromatherapiebehandelingen</a></p>
+<section class="band band-aroma">
+  <img src="/img/landschap.jpg" alt="Lavendelveld bij zonsondergang" loading="lazy">
+  <div class="wrap reveal">
+    <span class="eyebrow" style="color:#ffb3cc">Aromatherapie</span>
+    <h2>Welke geur kies <em>jij</em> vandaag?</h2>
+    <p>Geniet van totale ontspanning en heerlijke aroma's. Elke geur heeft zijn eigen werking, en tijdens de massage worden bijpassende edelstenen gebruikt.</p>
   </div>
 </section>
-
-<section class="section">
+<section class="section aroma-section">
   <div class="wrap">
-    <div class="gift reveal">
-      <div>
-        <span class="eyebrow">Kadobon</span>
-        <h2>Verras iemand met een <em>moment voor zichzelf</em></h2>
-        <p>Een kadobon van Wendy's Schoonheidssalon is verkrijgbaar in elk gewenst bedrag. Bel even, dan wordt de bon feestelijk voor je verpakt.</p>
-        <div class="btns" style="margin-top:1.8rem"><a class="btn btn-primary" href="/kadobon/">Meer over de kadobon</a></div>
-      </div>
-      <div class="gift-art">{ICONS['gift'].replace('stroke-width="1.4"', 'stroke-width=".7"')}</div>
-    </div>
+    {scents_html(' style="margin-top:0"')}
+    <p class="center" style="text-align:center;margin-top:40px"><a class="btn btn-primary" href="/gezichtsbehandelingen/aromatherapie/">Ontdek de aromatherapiebehandelingen</a></p>
   </div>
 </section>
 
@@ -887,6 +867,20 @@ def build_home() -> None:
       <div class="card reveal"><span class="card-icon">{ICONS['phone']}</span><h3>Bel voor een afspraak</h3><p>Afspraken maak je telefonisch via {SALON['tel']}. Twijfel je welke behandeling bij je past? Wendy adviseert je graag.</p></div>
       <div class="card reveal"><span class="card-icon">{ICONS['calendar']}</span><h3>Jouw tijd, gereserveerd</h3><p>Er wordt uitsluitend op afspraak gewerkt. Je tijd wordt speciaal voor jou vrijgehouden: geen haast, geen wachtrij.</p></div>
       <div class="card reveal"><span class="card-icon">{ICONS['heart']}</span><h3>Genieten</h3><p>Laat je verwennen met zachte producten, warme handen en heerlijke geuren, en ga stralend weer naar huis.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="gift reveal">
+      <div>
+        <span class="eyebrow">Kadobon</span>
+        <h2>Verras iemand met een <em>moment voor zichzelf</em></h2>
+        <p>Een kadobon van Wendy's Schoonheidssalon is verkrijgbaar in elk gewenst bedrag. Bel even, dan wordt de bon feestelijk voor je verpakt.</p>
+        <div class="btns" style="margin-top:1.8rem"><a class="btn btn-primary" href="/kadobon/">Meer over de kadobon</a></div>
+      </div>
+      <div class="gift-art">{ICONS['gift'].replace('stroke-width="1.4"', 'stroke-width=".7"')}</div>
     </div>
   </div>
 </section>
