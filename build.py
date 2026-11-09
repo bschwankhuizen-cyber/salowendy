@@ -1076,11 +1076,13 @@ def build_contact() -> None:
           <li><span class="ic">{ICONS['pin']}</span><div><small>Adres</small><span>{SALON['straat']}<br>{SALON['postcode']} {SALON['plaats']}</span></div></li>
         </ul>
       </div>
-      <a class="map reveal" href="{SALON['maps']}" target="_blank" rel="noopener" style="text-decoration:none">
-        <img class="bg" src="/img/landschap.jpg" alt="" loading="lazy">
-        <span class="pin">{ICONS['pin'].replace('fill="none"', 'fill="#ffffff"')}</span>
-        <div class="map-inner"><div><b>{SALON['straat']}</b><span>{SALON['postcode']} {SALON['plaats']}</span></div><span class="btn btn-primary">Route plannen</span></div>
-      </a>
+      <div class="map reveal">
+        <iframe class="map-frame" title="Kaart: {SALON['naam']}, {SALON['straat']}, {SALON['plaats']}"
+          src="https://maps.google.com/maps?q={SALON['straat'].replace(' ', '+')},+{SALON['postcode'].replace(' ', '+')}+{SALON['plaats']}&amp;hl=nl&amp;z=16&amp;output=embed"
+          loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        <div class="map-inner"><div><b>{SALON['straat']}</b><span>{SALON['postcode']} {SALON['plaats']}</span></div>
+          <a class="btn btn-primary" href="https://www.google.com/maps/dir/?api=1&amp;destination={SALON['straat'].replace(' ', '+')},+{SALON['postcode'].replace(' ', '+')}+{SALON['plaats']}" target="_blank" rel="noopener">Route plannen</a></div>
+      </div>
     </div>
   </div>
 </section>"""
@@ -1106,7 +1108,7 @@ def build_privacy() -> None:
         ("Geautomatiseerde besluitvorming", [f"{n} neemt niet op basis van geautomatiseerde verwerkingen besluiten over zaken die (aanzienlijke) gevolgen kunnen hebben voor personen. Het gaat hier om besluiten die worden genomen door computerprogramma's of -systemen, zonder dat daar een mens (bijvoorbeeld een medewerker van {n}) tussen zit. {n} gebruikt de volgende computerprogramma's of -systemen: administratieve software voor schoonheidssalons."]),
         ("Hoe lang we persoonsgegevens bewaren", [f"{n} bewaart uw persoonsgegevens niet langer dan strikt nodig is om de doelen te realiseren waarvoor uw gegevens worden verzameld."]),
         ("Delen van persoonsgegevens met derden", [f"{n} verstrekt nooit uw persoonsgegevens aan derden, alleen als dit nodig is voor de uitvoering van onze overeenkomst met u of om te voldoen aan een wettelijke verplichting."]),
-        ("Cookies, of vergelijkbare technieken, die wij gebruiken", [f"{n} gebruikt technische en functionele cookies en analytische cookies van Google Analytics. Een cookie is een klein tekstbestand dat bij het eerste bezoek aan deze website wordt opgeslagen op uw computer, tablet of smartphone. Met Google Analytics houden wij bij hoe bezoekers de website gebruiken, zodat wij de website kunnen optimaliseren. U kunt zich afmelden voor cookies door uw internetbrowser zo in te stellen dat deze geen cookies meer opslaat. Daarnaast kunt u ook alle informatie die eerder is opgeslagen via de instellingen van uw browser verwijderen."]),
+        ("Cookies, of vergelijkbare technieken, die wij gebruiken", [f"{n} gebruikt technische en functionele cookies en analytische cookies van Google Analytics. Een cookie is een klein tekstbestand dat bij het eerste bezoek aan deze website wordt opgeslagen op uw computer, tablet of smartphone. Met Google Analytics houden wij bij hoe bezoekers de website gebruiken, zodat wij de website kunnen optimaliseren. U kunt zich afmelden voor cookies door uw internetbrowser zo in te stellen dat deze geen cookies meer opslaat. Daarnaast kunt u ook alle informatie die eerder is opgeslagen via de instellingen van uw browser verwijderen.", "Op de contactpagina is een kaart van Google Maps ingebouwd. Google kan daarbij cookies plaatsen."]),
         ("Gegevens inzien, aanpassen of verwijderen", [f"U heeft het recht om uw persoonsgegevens in te zien, te corrigeren of te verwijderen. Daarnaast heeft u het recht om uw eventuele toestemming voor de gegevensverwerking in te trekken of bezwaar te maken tegen de verwerking van uw persoonsgegevens door {n} en heeft u het recht op gegevensoverdraagbaarheid. Dat betekent dat u bij ons een verzoek kunt indienen om de persoonsgegevens die wij van u beschikken in een computerbestand naar u of een ander, door u genoemde organisatie, te sturen.",
                                                        f"U kunt een verzoek tot inzage, correctie, verwijdering, gegevensoverdraging van uw persoonsgegevens of verzoek tot intrekking van uw toestemming of bezwaar op de verwerking van uw persoonsgegevens sturen naar {m}.",
                                                        "Om er zeker van te zijn dat het verzoek tot inzage door u is gedaan, vragen wij u een kopie van uw identiteitsbewijs met het verzoek mee te sturen. Maak in deze kopie uw pasfoto, MRZ (machine readable zone, de strook met nummers onderaan het paspoort), paspoortnummer en Burgerservicenummer (BSN) zwart. Dit ter bescherming van uw privacy. We reageren zo snel mogelijk, maar binnen vier weken, op uw verzoek.",
