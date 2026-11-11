@@ -1189,7 +1189,10 @@ def build_static() -> None:
         '<text x="32" y="44" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="36" fill="#fff">W</text>'
         '<circle cx="47" cy="17" r="4" fill="#e73b73"/></svg>', encoding="utf-8")
     # oude URL's zonder slash en verborgen pagina's van de oude site netjes doorsturen
+    oud = ["/gezichtsbehandelingen", "/overige_behandelingen", "/henna-wenkbrauwen", "/nagels", "/kadobon", "/contact", "/privacy"] + \
+          [f"/gezichtsbehandelingen/{g['slug']}" for g in GROEPEN]
     (OUT / "_redirects").write_text(
+        "".join(f"{u} {u}/ 301\n" for u in oud) +
         "/gezichtsbehandelingen/mooi /gezichtsbehandelingen/korte-behandelingen/ 301\n"
         "/gezichtsbehandelingen/special /gezichtsbehandelingen/aromatherapie/ 301\n"
         "/thuispakketten /contact/ 301\n"
